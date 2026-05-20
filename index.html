@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#060d1a">
+<meta name="description" content="Paragliding flight logbook">
+<title>Uplift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --bg:#060d1a;--bg2:#0c1828;--bg3:#112038;
+  --surface:rgba(255,255,255,0.05);--surface2:rgba(255,255,255,0.09);
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.18);
+  --text:#e8f0ff;--text2:#8aa0c0;--text3:#5a7098;
+  --gold:#f2a92e;--gold2:#d4891a;--blue:#4a90e2;--green:#3ecf8e;--red:#e05555;
+  --r:14px;--r-sm:9px;
+  --fs-base:16px;--fs-sm:13px;--fs-xs:11px;--fs-label:11px;
+}
+body.theme-light{--bg:#f0f4f8;--bg2:#ffffff;--bg3:#e4eaf2;--surface:rgba(0,0,0,0.05);--surface2:rgba(0,0,0,0.08);--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);--text:#1a2a3a;--text2:#4a6080;--text3:#7a90a8;--gold:#c47800;--gold2:#a06000}
+body.theme-light #ambient{background:radial-gradient(ellipse 100% 50% at 50% -5%,#c8daf0 0%,transparent 55%)}
+body.theme-light #stars{display:none}
+body.theme-hv{--bg:#000;--bg2:#0a0a0a;--bg3:#141414;--surface:rgba(255,255,255,0.08);--surface2:rgba(255,255,255,0.14);--border:rgba(255,255,255,0.2);--border2:rgba(255,255,255,0.35);--text:#fff;--text2:#ddd;--text3:#aaa;--gold:#ffcc00;--gold2:#e6b800;--fs-base:18px;--fs-sm:15px;--fs-xs:13px;--fs-label:13px}
+body.theme-hv #ambient{background:none}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:var(--fs-base);line-height:1.5}
+#ambient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 100% 50% at 50% -5%,#1a3d7a 0%,transparent 55%),radial-gradient(ellipse 60% 40% at 90% 90%,#0a1e3d 0%,transparent 50%)}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.7}
+
+/* Sign in */
+#signinScreen{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;text-align:center}
+#signinScreen.hidden{display:none}
+.signin-wordmark{font-family:'Syne',sans-serif;font-weight:800;font-size:36px;letter-spacing:-1px;margin-bottom:8px}
+.signin-wordmark em{color:var(--gold);font-style:normal}
+.signin-sub{font-size:15px;color:var(--text2);margin-bottom:48px;line-height:1.5}
+.signin-btn{display:flex;align-items:center;gap:12px;background:white;color:#1a1a2e;border:none;border-radius:50px;padding:14px 28px;font-family:'Syne',sans-serif;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.3);margin:0 auto}
+.signin-btn img{width:22px;height:22px}
+.signin-note{font-size:12px;color:var(--text3);margin-top:24px;line-height:1.6;max-width:280px;margin-left:auto;margin-right:auto}
+.offline-btn{background:none;border:1px solid var(--border);border-radius:50px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 24px;cursor:pointer;margin-top:16px}
+
+/* Sync bar */
+#syncBar{position:fixed;top:0;left:0;right:0;z-index:150;padding:8px 20px;font-size:12px;text-align:center;transform:translateY(-100%);transition:transform 0.3s}
+#syncBar.show{transform:translateY(0)}
+#syncBar.syncing{background:rgba(74,144,226,0.9);color:white}
+#syncBar.synced{background:rgba(62,207,142,0.9);color:white}
+#syncBar.error,#syncBar.offline{background:rgba(90,112,152,0.9);color:white}
+
+/* User pill */
+.user-pill{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:4px 12px 4px 4px;cursor:pointer}
+.user-pill img{width:26px;height:26px;border-radius:50%;object-fit:cover}
+.user-pill-name{font-size:13px;font-weight:500;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* App layout */
+#app{position:relative;z-index:1;height:100dvh;display:flex;flex-direction:column;max-width:540px;margin:0 auto}
+#topbar{padding:env(safe-area-inset-top,16px) 20px 0;padding-top:max(env(safe-area-inset-top),16px);flex-shrink:0}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 0 8px}
+.wordmark{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.5px;color:var(--text);display:flex;align-items:center;gap:9px}
+.wordmark em{color:var(--gold);font-style:normal}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.icon-btn{background:var(--surface);border:1px solid var(--border);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);flex-shrink:0}
+.icon-btn:active{background:var(--surface2)}
+#statsStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 20px 12px}
+.stat-pill{background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:8px 6px;text-align:center}
+.stat-pill-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--gold);line-height:1}
+.stat-pill-lbl{font-size:var(--fs-label);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-top:3px}
+#nav{display:flex;padding:0 20px 10px;gap:6px;flex-shrink:0}
+.nav-btn{flex:1;background:none;border:1px solid var(--border);border-radius:50px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:var(--fs-sm);font-weight:500;padding:8px 2px;cursor:pointer;transition:all 0.18s}
+.nav-btn.active{background:var(--gold);border-color:var(--gold);color:#06100a;font-weight:700}
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+#content::-webkit-scrollbar{display:none}
+.screen{display:none;padding:0 20px 110px}
+.screen.active{display:block}
+.sec-label{font-size:var(--fs-label);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin:20px 0 10px}
+
+/* FAB */
+#fab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);left:50%;transform:translateX(-50%);z-index:50;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:#040a10;border:none;border-radius:50px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;padding:15px 30px;cursor:pointer;box-shadow:0 6px 30px rgba(242,169,46,0.45),0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;gap:7px;white-space:nowrap;transition:transform 0.12s}
+#fab:active{transform:translateX(-50%) scale(0.96)}
+#fab svg{width:18px;height:18px}
+
+/* Landscape */
+@media (orientation:landscape){
+  #app{flex-direction:row;max-width:100%}
+  #topbar{width:200px;height:100dvh;padding:16px;display:flex;flex-direction:column;border-right:1px solid var(--border);flex-shrink:0;overflow-y:auto}
+  #topbar::-webkit-scrollbar{display:none}
+  .topbar-inner{padding:8px 0 12px;border-bottom:1px solid var(--border);margin-bottom:10px}
+  #statsStrip{grid-template-columns:1fr 1fr;padding:0 0 10px;gap:6px;border-bottom:1px solid var(--border);margin-bottom:10px}
+  .stat-pill-val{font-size:15px}
+  #nav{flex-direction:column;padding:0;gap:5px}
+  .nav-btn{text-align:left;padding:10px 12px;border-radius:var(--r-sm);font-size:13px}
+  #content{flex:1;height:100dvh;overflow-y:auto;padding-top:16px}
+  .screen{padding:0 20px 80px}
+  #fab{left:auto;right:20px;transform:none;bottom:20px}
+  #fab:active{transform:scale(0.96)}
+}
+
+/* Flight cards */
+.flights-list{display:flex;flex-direction:column;gap:10px}
+.flight-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:background 0.15s,transform 0.1s;position:relative;overflow:hidden}
+.flight-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);border-radius:2px 0 0 2px}
+.flight-card:active{transform:scale(0.99);background:var(--surface2)}
+.fc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.fc-num{font-family:'Syne',sans-serif;font-weight:700;font-size:var(--fs-label);color:var(--gold);letter-spacing:0.05em;margin-bottom:2px}
+.fc-site{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--text);line-height:1.2}
+.fc-launch-name{font-size:var(--fs-sm);color:var(--text2);margin-top:2px}
+.fc-date{font-size:var(--fs-sm);color:var(--text3);white-space:nowrap;margin-left:8px;flex-shrink:0}
+.fc-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.chip{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.09);border-radius:50px;padding:4px 10px;font-size:var(--fs-xs);color:var(--text2)}
+.chip.g{background:rgba(242,169,46,0.1);border-color:rgba(242,169,46,0.2);color:var(--gold)}
+.chip.b{background:rgba(74,144,226,0.1);border-color:rgba(74,144,226,0.2);color:#7ab4f0}
+.chip.p{background:rgba(160,100,220,0.1);border-color:rgba(160,100,220,0.2);color:#c090f0}
+.fc-notes{margin-top:9px;font-size:var(--fs-sm);color:var(--text2);font-style:italic;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.star-row{display:flex;gap:2px;margin-top:4px}
+.s{font-size:12px;color:var(--gold)}.s.e{color:rgba(255,255,255,0.12)}
+.fc-photo-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;margin-left:10px;border:1px solid var(--border)}
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-icon{font-size:52px;opacity:0.35;margin-bottom:16px}
+.empty h3{font-family:'Syne',sans-serif;font-size:20px;color:var(--text);margin-bottom:8px}
+.empty p{font-size:var(--fs-base);line-height:1.6}
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap input{background:var(--surface);border:1px solid var(--border);border-radius:50px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--fs-base);width:100%;padding:11px 14px 11px 40px;outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.search-wrap input:focus{border-color:var(--blue)}
+.search-wrap input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;opacity:0.4;pointer-events:none}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:100;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{background:var(--bg2);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-height:94dvh;overflow-y:auto;padding:0 22px calc(env(safe-area-inset-bottom,0px) + 28px);animation:slideUp 0.28s cubic-bezier(0.32,0.72,0,1)}
+.sheet::-webkit-scrollbar{display:none}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.handle{width:36px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:14px auto 20px}
+.sheet-title{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;color:var(--text);margin-bottom:22px}
+
+/* Form */
+.fg{margin-bottom:18px}
+.fg label{display:block;font-size:var(--fs-label);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.fg input,.fg textarea,.fg select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:var(--fs-base);padding:13px 14px;outline:none;transition:border-color 0.18s;-webkit-appearance:none;appearance:none}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--blue)}
+.fg select option{background:var(--bg2)}
+.fg textarea{resize:none;line-height:1.5;min-height:90px}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--text3)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dur-lbl{text-align:center;font-size:var(--fs-label);color:var(--text3);margin-top:5px}
+.toggle-group{display:flex;gap:6px;flex-wrap:wrap}
+.toggle-btn{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:var(--fs-sm);font-weight:500;padding:11px 6px;cursor:pointer;transition:all 0.15s;text-align:center;white-space:nowrap}
+.toggle-btn.active{background:rgba(242,169,46,0.15);border-color:var(--gold);color:var(--gold);font-weight:600}
+.star-input{display:flex;gap:8px}
+.star-input button{background:none;border:none;font-size:32px;cursor:pointer;color:rgba(255,255,255,0.12);transition:color 0.12s,transform 0.08s;padding:0;line-height:1}
+.star-input button.on{color:var(--gold)}
+.star-input button:active{transform:scale(1.25)}
+
+/* Photo upload */
+.photo-upload-area{border:2px dashed var(--border2);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:border-color 0.18s,background 0.18s}
+.photo-upload-area:active{background:var(--surface2);border-color:var(--gold)}
+.photo-upload-area p{font-size:var(--fs-sm);color:var(--text3);margin-top:6px}
+.photo-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.photo-thumb-wrap{position:relative;width:72px;height:72px}
+.photo-thumb-wrap img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+.photo-del{position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:var(--red);border-radius:50%;border:none;color:white;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* IGC */
+.igc-btn{width:100%;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:var(--r-sm);color:#7ab4f0;font-family:'DM Sans',sans-serif;font-size:var(--fs-sm);font-weight:500;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;margin-bottom:18px}
+.igc-parsed{background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.25);border-radius:var(--r-sm);padding:11px 14px;margin-bottom:16px;font-size:var(--fs-sm);color:var(--green);display:none}
+
+/* Buttons */
+.btn{width:100%;border:none;border-radius:50px;font-family:'Syne',sans-serif;font-weight:700;font-size:16px;padding:16px;cursor:pointer;transition:opacity 0.15s,transform 0.1s;margin-top:8px}
+.btn:active{opacity:0.88;transform:scale(0.99)}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:#040a10;box-shadow:0 4px 20px rgba(242,169,46,0.3)}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif;font-weight:500}
+.btn-danger{background:none;border:1px solid rgba(224,85,85,0.25);color:var(--red);font-family:'DM Sans',sans-serif;font-weight:500}
+
+/* Detail */
+.detail-hero{padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.detail-num{font-family:'Syne',sans-serif;font-size:var(--fs-label);font-weight:700;letter-spacing:0.08em;color:var(--gold);margin-bottom:4px}
+.detail-site{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;line-height:1.1;margin-bottom:3px}
+.detail-launch-name{font-size:var(--fs-base);color:var(--text2);margin-bottom:5px}
+.detail-date{font-size:var(--fs-sm);color:var(--text2)}
+.detail-stars{display:flex;gap:4px;margin-top:9px;align-items:center}
+.detail-stars .s{font-size:18px}
+.detail-stars-lbl{font-size:var(--fs-xs);color:var(--text3);margin-left:7px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.detail-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px}
+.detail-cell.full{grid-column:span 2}
+.dc-lbl{font-size:var(--fs-xs);letter-spacing:0.07em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.dc-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--text)}
+.dc-val.sm{font-size:var(--fs-base);font-weight:500}
+.detail-notes{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:18px;font-size:var(--fs-base);line-height:1.6;color:var(--text2);font-style:italic}
+.detail-photos{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.detail-photos img{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:pointer}
+
+/* Stats & charts */
+.big-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.big-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.big-num{font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--gold);line-height:1}
+.big-unit{font-size:15px;font-weight:400;color:var(--gold2)}
+.big-desc{font-size:var(--fs-sm);color:var(--text3);margin-top:5px}
+.bar-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.bar-name{font-size:var(--fs-base);font-weight:500}
+.bar-right{display:flex;align-items:center;gap:10px}
+.bar-track{width:56px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:var(--gold);border-radius:2px}
+.bar-count{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--gold)}
+.pie-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:10px}
+.pie-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:14px;color:var(--text2)}
+.pie-inner{display:flex;align-items:center;gap:16px}
+.pie-legend{flex:1;display:flex;flex-direction:column;gap:6px}
+.pie-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.pie-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* Notes */
+.note-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;cursor:pointer;transition:background 0.15s;position:relative}
+.note-card:active{background:var(--surface2)}
+.note-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:6px}
+.note-preview{font-size:var(--fs-sm);color:var(--text2);line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.note-date{font-size:var(--fs-xs);color:var(--text3);margin-top:8px}
+.note-drag{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:18px;cursor:grab;padding:4px;touch-action:none}
+.note-photos{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.note-photos img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+
+/* Gear */
+.gear-category{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;cursor:pointer;transition:background 0.15s}
+.gear-category:active{background:var(--surface2)}
+.gear-cat-top{display:flex;align-items:center;gap:12px}
+.gear-cat-icon{font-size:28px}
+.gear-cat-info{flex:1}
+.gear-cat-name{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
+.gear-cat-sub{font-size:var(--fs-sm);color:var(--text2);margin-top:2px}
+.gear-cat-arrow{color:var(--text3);font-size:18px}
+.gear-item-row{display:flex;align-items:center;padding:10px 0;border-top:1px solid var(--border);cursor:pointer}
+.gear-item-row:active{opacity:0.7}
+.numpad-display{text-align:center;padding:16px 0 12px;font-family:'Syne',sans-serif;font-weight:800;font-size:42px;color:var(--gold);line-height:1}
+.numpad-hm{min-width:52px;display:inline-block;text-align:right}
+.numpad-unit{font-size:20px;font-weight:400;color:var(--gold2);margin:0 6px 0 2px}
+.numpad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 0}
+.np-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Syne',sans-serif;font-weight:700;font-size:22px;padding:14px 8px;cursor:pointer;transition:background 0.1s}
+.np-btn:active{background:var(--surface2)}
+.np-wide{grid-column:span 2}
+.gear-alert{background:rgba(224,85,85,0.12);border:1px solid rgba(224,85,85,0.3);border-radius:var(--r-sm);padding:10px 14px;margin-top:10px;font-size:var(--fs-sm);color:var(--red);display:flex;align-items:center;gap:8px}
+
+/* Settings */
+.settings-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:var(--fs-base)}
+.settings-val{font-size:var(--fs-base);color:var(--text2)}
+.settings-row input[type=number]{background:none;border:none;color:var(--gold);font-family:'Syne',sans-serif;font-weight:700;font-size:17px;text-align:right;width:90px;outline:none}
+.sel-inline{background:none;border:none;color:var(--gold);font-family:'Syne',sans-serif;font-weight:700;font-size:16px;text-align:right;outline:none;-webkit-appearance:none;cursor:pointer}
+.tag-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.tag-item{background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:6px 10px;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.tag-item-del{cursor:pointer;color:var(--red);font-size:14px;line-height:1}
+.add-tag-row{display:flex;gap:8px}
+.add-tag-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 12px;outline:none;-webkit-appearance:none}
+.add-tag-row input::placeholder{color:var(--text3)}
+.add-tag-row button{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 14px;cursor:pointer;white-space:nowrap}
+
+/* Image viewer */
+#imgViewer{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:300;display:none;align-items:center;justify-content:center}
+#imgViewer.open{display:flex}
+#imgViewer img{max-width:95vw;max-height:90dvh;border-radius:10px;object-fit:contain}
+#imgViewer-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* User menu */
+#userMenu{position:fixed;inset:0;z-index:150;display:none;align-items:flex-start;justify-content:flex-end;padding:80px 20px 0}
+#userMenu.open{display:flex}
+.user-menu-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px;min-width:200px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
+.user-menu-item{padding:12px 16px;border-radius:var(--r-sm);font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text2)}
+.user-menu-item:active{background:var(--surface2)}
+.user-menu-divider{height:1px;background:var(--border);margin:4px 0}
+</style>
+</head>
+<body>
+<div id="ambient"></div>
+<canvas id="stars"></canvas>
+<div id="syncBar"></div>
+
+<!-- Sign in -->
+<div id="signinScreen">
+  <div style="margin-bottom:32px">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M32 56L32 18" stroke="#f2a92e" stroke-width="4" stroke-linecap="round"/>
+      <path d="M18 32L32 18L46 32" stroke="#f2a92e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 44C8 44 18 30 32 26C46 22 56 30 56 30" stroke="rgba(242,169,46,0.45)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="32" cy="26" r="4" fill="#f2a92e"/>
+    </svg>
+  </div>
+  <div class="signin-wordmark">Up<em>lift</em></div>
+  <div class="signin-sub">Your paragliding flight logbook.<br>Sign in to sync across all your devices.</div>
+  <button class="signin-btn" onclick="signInWithGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+    Sign in with Google
+  </button>
+  <button class="offline-btn" onclick="useOffline()">Continue offline (no sync)</button>
+  <div class="signin-note">Your logbook is stored in your own Google Drive. Uplift never sees or stores your personal data.</div>
+</div>
+
+<!-- User menu -->
+<div id="userMenu" onclick="closeUserMenu()">
+  <div class="user-menu-box" onclick="event.stopPropagation()">
+    <div class="user-menu-item" id="userMenuName" style="color:var(--text);font-weight:600;cursor:default"></div>
+    <div class="user-menu-divider"></div>
+    <div class="user-menu-item" onclick="syncNow()">☁ Sync now</div>
+    <div class="user-menu-item" onclick="closeUserMenu();openSettings()">⚙ Settings</div>
+    <div class="user-menu-divider"></div>
+    <div class="user-menu-item" onclick="signOut()" style="color:var(--red)">Sign out</div>
+  </div>
+</div>
+
+<!-- Main app -->
+<div id="app" style="display:none">
+  <div id="topbar">
+    <div class="topbar-inner">
+      <div class="wordmark">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M14 24L14 8" stroke="#f2a92e" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M7 14L14 7L21 14" stroke="#f2a92e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 19C3 19 8 12 14 10C20 8 25 12 25 12" stroke="rgba(242,169,46,0.4)" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="14" cy="10" r="2" fill="#f2a92e"/>
+        </svg>
+        Up<em>lift</em>
+      </div>
+      <div class="topbar-right">
+        <div id="userPill" class="user-pill" onclick="toggleUserMenu()" style="display:none">
+          <img id="userAvatar" src="" alt="">
+          <span class="user-pill-name" id="userPillName"></span>
+        </div>
+        <div class="icon-btn" id="settingsIconBtn" onclick="openSettings()">⚙</div>
+      </div>
+    </div>
+    <div id="statsStrip">
+      <div class="stat-pill"><div class="stat-pill-val" id="sFlights">0</div><div class="stat-pill-lbl">Flights</div></div>
+      <div class="stat-pill"><div class="stat-pill-val" id="sHours">0h</div><div class="stat-pill-lbl">Airtime</div></div>
+      <div class="stat-pill"><div class="stat-pill-val" id="sSites">0</div><div class="stat-pill-lbl">Sites</div></div>
+      <div class="stat-pill"><div class="stat-pill-val" id="sNext">#–</div><div class="stat-pill-lbl">Next #</div></div>
+    </div>
+    <div id="nav">
+      <button class="nav-btn active" onclick="showTab('log',this)">Logbook</button>
+      <button class="nav-btn" onclick="showTab('stats',this)">Stats</button>
+      <button class="nav-btn" onclick="showTab('notes',this)">Notes</button>
+      <button class="nav-btn" onclick="showTab('gear',this)">Gear</button>
+    </div>
+  </div>
+
+  <div id="content">
+    <!-- LOGBOOK -->
+    <div class="screen active" id="tab-log">
+      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" placeholder="Search site, wing, notes…" oninput="filterFlights(this.value)"></div>
+      <div class="flights-list" id="flightsList"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="screen" id="tab-stats">
+      <div class="sec-label" style="margin-top:4px">Overview</div>
+      <div class="big-grid" id="bigStats"></div>
+      <div class="sec-label">Sites flown</div>
+      <div id="sitesStats"></div>
+      <div class="sec-label">Launch type</div>
+      <div id="launchPie"></div>
+      <div class="sec-label">Flight types</div>
+      <div id="typePie"></div>
+      <div class="sec-label">Top-rated flights</div>
+      <div id="bestFlights"></div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="screen" id="tab-notes">
+      <div id="notesList"></div>
+    </div>
+
+    <!-- GEAR -->
+    <div class="screen" id="tab-gear">
+      <div class="sec-label" style="margin-top:4px">Equipment</div>
+      <div id="gearList"></div>
+    </div>
+  </div>
+</div>
+
+<button id="fab" onclick="fabTapped()" style="display:none">
+  <svg viewBox="0 0 18 18" fill="none"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+  Log Flight
+</button>
+
+<!-- FLIGHT MODAL -->
+<div class="overlay" id="flightOverlay">
+<div class="sheet" id="flightSheet">
+  <div class="handle"></div>
+  <div class="sheet-title" id="flightModalTitle">Log a Flight</div>
+  <button class="igc-btn" onclick="document.getElementById('igcFile').click()">
+    <span>📡</span> Import IGC from SeeYou / FlySkyHy / XCTrack
+  </button>
+  <input type="file" id="igcFile" accept=".igc" style="display:none" onchange="parseIGC(this)">
+  <div class="igc-parsed" id="igcParsed">✓ IGC imported — fields pre-filled below</div>
+
+  <div class="fg"><label>📍 Site</label>
+    <select id="f-site-select" onchange="siteSelectChanged(this)"><option value="">Select site…</option></select>
+    <input type="text" id="f-site-new" placeholder="Type new site name…" style="display:none;margin-top:8px" autocomplete="off">
+  </div>
+  <div class="fg"><label>🏔 Launch</label>
+    <select id="f-launch-select" onchange="launchSelectChanged(this)"><option value="">Select launch…</option></select>
+    <input type="text" id="f-launch-new" placeholder="Type new launch name…" style="display:none;margin-top:8px" autocomplete="off">
+  </div>
+  <div class="fg"><label>📅 Date &amp; Time</label>
+    <div class="row2"><input type="date" id="f-date"><input type="time" id="f-time"></div>
+  </div>
+  <div class="fg"><label>🚀 Launch Type</label>
+    <div class="toggle-group" id="launchTypeGroup">
+      <button class="toggle-btn active" onclick="setLaunchType('forward',this)">⬆ Forward</button>
+      <button class="toggle-btn" onclick="setLaunchType('reverse',this)">↩ Reverse</button>
+      <button class="toggle-btn" onclick="setLaunchType('cobra',this)">🐍 Cobra</button>
+    </div>
+  </div>
+  <div class="fg"><label>⏱ Duration</label>
+    <div class="numpad-display" id="durDisplay">
+      <span class="numpad-hm" id="durH">0</span><span class="numpad-unit">h</span>
+      <span class="numpad-hm" id="durM">00</span><span class="numpad-unit">m</span>
+    </div>
+    <input type="hidden" id="f-dur">
+    <div class="numpad-grid" id="durNumpad">
+      <button class="np-btn" onclick="npPress(1)">1</button>
+      <button class="np-btn" onclick="npPress(2)">2</button>
+      <button class="np-btn" onclick="npPress(3)">3</button>
+      <button class="np-btn" onclick="npPress(4)">4</button>
+      <button class="np-btn" onclick="npPress(5)">5</button>
+      <button class="np-btn" onclick="npPress(6)">6</button>
+      <button class="np-btn" onclick="npPress(7)">7</button>
+      <button class="np-btn" onclick="npPress(8)">8</button>
+      <button class="np-btn" onclick="npPress(9)">9</button>
+      <button class="np-btn np-wide" onclick="npPress(0)">0</button>
+      <button class="np-btn" onclick="npDelete()">⌫</button>
+    </div>
+    <div class="dur-lbl" style="margin-top:4px">Type digits e.g. 1 3 0 = 1h 30m</div>
+  </div>
+  <div class="fg"><label>⬆️ Max Altitude &amp; Distance</label>
+    <div class="row2">
+      <input type="number" id="f-alt" placeholder="Altitude" inputmode="numeric">
+      <input type="number" id="f-dist" placeholder="Distance" inputmode="decimal" step="0.1">
+    </div>
+    <div class="row2" style="margin-top:5px">
+      <div class="dur-lbl" id="altUnitLabel">metres (m)</div>
+      <div class="dur-lbl" id="distUnitLabel">km</div>
+    </div>
+  </div>
+  <div class="fg"><label>🌬 Wind at Launch</label>
+    <div class="row3" style="margin-bottom:8px">
+      <input type="number" id="f-windSpeed" placeholder="Speed" inputmode="numeric">
+      <input type="number" id="f-windGust" placeholder="Gust" inputmode="numeric">
+      <select id="f-windDir">
+        <option value="">Dir…</option>
+        <option>N</option><option>NNE</option><option>NE</option><option>ENE</option>
+        <option>E</option><option>ESE</option><option>SE</option><option>SSE</option>
+        <option>S</option><option>SSW</option><option>SW</option><option>WSW</option>
+        <option>W</option><option>WNW</option><option>NW</option><option>NNW</option>
+      </select>
+    </div>
+    <div class="row3">
+      <div class="dur-lbl" id="windUnitLabel">mph</div>
+      <div class="dur-lbl" id="windGustLabel">mph (gust)</div>
+      <div class="dur-lbl">direction</div>
+    </div>
+  </div>
+  <div class="fg"><label>☁️ Conditions</label>
+    <div class="tag-wrap" id="conditionChips"></div>
+  </div>
+  <div class="fg"><label>🪂 Wing</label>
+    <select id="f-wing-select" onchange="gearSelectChanged(this,'wing')"><option value="">Select wing…</option></select>
+    <input type="text" id="f-wing-new" placeholder="Type wing name (will be added to gear)…" style="display:none;margin-top:8px" autocomplete="off">
+  </div>
+  <div class="fg"><label>🪑 Harness</label>
+    <select id="f-harness-select" onchange="gearSelectChanged(this,'harness')"><option value="">Select harness…</option></select>
+    <input type="text" id="f-harness-new" placeholder="Type harness name (will be added to gear)…" style="display:none;margin-top:8px" autocomplete="off">
+  </div>
+  <div class="fg"><label>🛟 Reserve</label>
+    <select id="f-reserve-select" onchange="gearSelectChanged(this,'reserve')"><option value="">Select reserve…</option></select>
+    <input type="text" id="f-reserve-new" placeholder="Type reserve name (will be added to gear)…" style="display:none;margin-top:8px" autocomplete="off">
+  </div>
+  <div class="fg"><label>👥 Flying With</label>
+    <select id="f-pilot-select" onchange="pilotSelectChanged(this)"><option value="">Select person…</option></select>
+    <div id="selectedPilotChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+  </div>
+  <div class="fg"><label>🏷 Flight Type</label>
+    <div style="display:flex;flex-wrap:wrap;gap:6px" id="flightTypeChips"></div>
+  </div>
+  <div class="fg"><label>🚀 Launch Rating</label>
+    <div class="star-input" id="launchRatingInput">
+      <button type="button" onclick="setStar('launch',1)">★</button><button type="button" onclick="setStar('launch',2)">★</button>
+      <button type="button" onclick="setStar('launch',3)">★</button><button type="button" onclick="setStar('launch',4)">★</button>
+      <button type="button" onclick="setStar('launch',5)">★</button>
+    </div>
+  </div>
+  <div class="fg"><label>⭐ Flight Rating</label>
+    <div class="star-input" id="flightRatingInput">
+      <button type="button" onclick="setStar('flight',1)">★</button><button type="button" onclick="setStar('flight',2)">★</button>
+      <button type="button" onclick="setStar('flight',3)">★</button><button type="button" onclick="setStar('flight',4)">★</button>
+      <button type="button" onclick="setStar('flight',5)">★</button>
+    </div>
+  </div>
+  <div class="fg"><label>🎯 Landing Rating</label>
+    <div class="star-input" id="landingRatingInput">
+      <button type="button" onclick="setStar('landing',1)">★</button><button type="button" onclick="setStar('landing',2)">★</button>
+      <button type="button" onclick="setStar('landing',3)">★</button><button type="button" onclick="setStar('landing',4)">★</button>
+      <button type="button" onclick="setStar('landing',5)">★</button>
+    </div>
+  </div>
+  <div class="fg"><label>📝 Notes</label>
+    <textarea id="f-notes" placeholder="Conditions, highlights, things to work on…" rows="3"></textarea>
+  </div>
+  <div class="fg"><label>📷 Photos</label>
+    <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+      <div style="font-size:28px">📷</div>
+      <p>Tap to add photos from your camera roll</p>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="addPhotos(this)">
+    <div class="photo-thumbs" id="photoThumbs"></div>
+  </div>
+  <button class="btn btn-gold" id="saveFlightBtn">Save Flight</button>
+  <button class="btn btn-danger" id="deleteFlightBtn" onclick="deleteFlight()" style="display:none">Delete this flight</button>
+  <button class="btn btn-ghost" onclick="closeOverlay('flightOverlay')" style="margin-top:8px">Cancel</button>
+</div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay">
+<div class="sheet" id="detailSheet"><div class="handle"></div><div id="detailContent"></div></div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="overlay" id="noteOverlay">
+<div class="sheet">
+  <div class="handle"></div>
+  <div class="sheet-title" id="noteModalTitle">New Note</div>
+  <div class="fg"><label>Title</label><input type="text" id="n-title" placeholder="e.g. Mussel Rock site notes"></div>
+  <div class="fg"><label>Notes</label><textarea id="n-body" placeholder="Anything worth remembering…" rows="6" style="min-height:140px"></textarea></div>
+  <div class="fg"><label>📷 Photos</label>
+    <div class="photo-upload-area" onclick="document.getElementById('notePhotoInput').click()">
+      <div style="font-size:24px">📷</div>
+      <p>Tap to add photos</p>
+    </div>
+    <input type="file" id="notePhotoInput" accept="image/*" multiple style="display:none" onchange="addNotePhotos(this)">
+    <div class="photo-thumbs" id="notePhotoThumbs"></div>
+  </div>
+  <button class="btn btn-gold" onclick="saveNote()">Save Note</button>
+  <button class="btn btn-danger" id="deleteNoteBtn" onclick="deleteNote()" style="display:none">Delete note</button>
+  <button class="btn btn-ghost" onclick="closeOverlay('noteOverlay')" style="margin-top:8px">Cancel</button>
+</div>
+</div>
+
+<!-- GEAR CATEGORY PICKER -->
+<div class="overlay" id="gearPickerOverlay">
+<div class="sheet">
+  <div class="handle"></div>
+  <div class="sheet-title">Add Gear</div>
+  <p style="color:var(--text2);font-size:14px;margin-bottom:20px">What type of equipment would you like to add?</p>
+  <button class="btn btn-gold" onclick="closeOverlay('gearPickerOverlay');openGearDetail('wing')" style="margin-bottom:10px">🪂 Wing</button>
+  <button class="btn btn-ghost" onclick="closeOverlay('gearPickerOverlay');openGearDetail('harness')" style="margin-bottom:10px">🦺 Harness</button>
+  <button class="btn btn-ghost" onclick="closeOverlay('gearPickerOverlay');openGearDetail('reserve')" style="margin-bottom:10px">🛟 Reserve</button>
+  <button class="btn btn-ghost" onclick="closeOverlay('gearPickerOverlay')" style="margin-top:0">Cancel</button>
+</div>
+</div>
+
+<!-- GEAR DETAIL MODAL -->
+<div class="overlay" id="gearDetailOverlay">
+<div class="sheet" id="gearDetailSheet">
+  <div class="handle"></div>
+  <div class="sheet-title" id="gearDetailTitle">Wing</div>
+
+  <div class="fg"><label>Name / Model</label><input type="text" id="gd-name" placeholder="e.g. BGD Epic 2"></div>
+  <div class="fg"><label>Size</label><input type="text" id="gd-size" placeholder="e.g. M"></div>
+  <div class="fg"><label>Date of Purchase</label><input type="date" id="gd-purchase"></div>
+
+  <!-- Wing only fields -->
+  <div id="gd-wing-fields">
+    <div class="fg"><label>EN / LTF Rating</label><input type="text" id="gd-rating" placeholder="e.g. EN-B"></div>
+    <div class="fg"><label>Weight Range</label><input type="text" id="gd-weight" placeholder="e.g. 80-100kg"></div>
+    <div class="fg"><label>Glide Ratio</label><input type="text" id="gd-glide" placeholder="e.g. 9.2"></div>
+    <div class="fg"><label>Trim Speed</label><input type="text" id="gd-trimspeed" placeholder="e.g. 38 kph"></div>
+    <div class="fg"><label>Max Speed</label><input type="text" id="gd-maxspeed" placeholder="e.g. 54 kph"></div>
+    <div class="fg"><label>Last Service / Check</label><input type="date" id="gd-service"></div>
+  </div>
+
+  <!-- Harness only fields -->
+  <div id="gd-harness-fields" style="display:none">
+    <div class="fg"><label>Weight Rating</label><input type="text" id="gd-hweight" placeholder="e.g. 60-110kg"></div>
+    <div class="fg"><label>Last Service / Check</label><input type="date" id="gd-hservice"></div>
+  </div>
+
+  <!-- Reserve only fields -->
+  <div id="gd-reserve-fields" style="display:none">
+    <div class="fg"><label>Weight Rating / Load Range</label><input type="text" id="gd-rweight" placeholder="e.g. 60-110kg"></div>
+    <div class="fg"><label>🛟 Last Repack Date</label><input type="date" id="gd-repack"></div>
+    <div class="fg"><label>Last Thrown Date</label><input type="date" id="gd-thrown"></div>
+    <div class="fg"><label>SIV Done</label>
+      <div class="toggle-group" id="gd-siv-group">
+        <button class="toggle-btn" onclick="setGearToggle('siv',true,this)">✓ Yes</button>
+        <button class="toggle-btn" onclick="setGearToggle('siv',false,this)">✗ No</button>
+      </div>
+    </div>
+    <div class="fg"><label>Water Landing Done</label>
+      <div class="toggle-group" id="gd-water-group">
+        <button class="toggle-btn" onclick="setGearToggle('water',true,this)">✓ Yes</button>
+        <button class="toggle-btn" onclick="setGearToggle('water',false,this)">✗ No</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fg"><label>🔗 Link / URL</label><input type="url" id="gd-url" placeholder="e.g. manufacturer page, manual…"></div>
+  <div class="fg"><label>⚖️ Equipment Weight (kg)</label><input type="number" id="gd-physweight" placeholder="e.g. 5.1" inputmode="decimal" step="0.1"></div>
+  <div class="fg"><label>Notes</label><textarea id="gd-notes" placeholder="Repairs, modifications, reminders…" rows="4"></textarea></div>
+  <div class="fg"><label>📷 Photos</label>
+    <div class="photo-upload-area" onclick="document.getElementById('gearPhotoInput').click()">
+      <div style="font-size:24px">📷</div><p>Tap to add photos</p>
+    </div>
+    <input type="file" id="gearPhotoInput" accept="image/*" multiple style="display:none">
+    <div class="photo-thumbs" id="gearPhotoThumbs"></div>
+  </div>
+  <button class="btn btn-gold" onclick="saveGearDetail()">Save</button>
+  <button class="btn btn-ghost" onclick="closeOverlay('gearDetailOverlay')" style="margin-top:8px">Cancel</button>
+</div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="settingsOverlay">
+<div class="sheet">
+  <div class="handle"></div>
+  <div class="sheet-title">Settings</div>
+
+  <div class="sec-label" style="margin-top:0">Theme</div>
+  <div class="settings-group">
+    <div class="settings-row"><span class="settings-label">🌙 Dark</span><div class="icon-btn" id="theme-dark" onclick="setTheme('dark')" style="width:28px;height:28px;border-radius:50%;background:#060d1a;border:2px solid var(--gold)"></div></div>
+    <div class="settings-row"><span class="settings-label">☀️ Light</span><div class="icon-btn" id="theme-light" onclick="setTheme('light')" style="width:28px;height:28px;border-radius:50%;background:#f0f4f8;border:2px solid transparent"></div></div>
+    <div class="settings-row"><span class="settings-label">🔆 High Visibility</span><div class="icon-btn" id="theme-hv" onclick="setTheme('hv')" style="width:28px;height:28px;border-radius:50%;background:#000;border:2px solid transparent"><span style="color:yellow;font-size:14px;line-height:28px;display:block;text-align:center">A</span></div></div>
+  </div>
+
+  <div class="sec-label">Flight numbering</div>
+  <div class="settings-group">
+    <div class="settings-row"><span class="settings-label">Starting flight number</span><input type="number" id="set-startNum" inputmode="numeric" onchange="saveSettings()"></div>
+    <div class="settings-row"><span class="settings-label">Next flight will be</span><span class="settings-val" id="set-nextFlight">#–</span></div>
+  </div>
+
+  <div class="sec-label">Units</div>
+  <div class="settings-group">
+    <div class="settings-row"><span class="settings-label">Altitude unit</span>
+      <select class="sel-inline" id="set-altUnit" onchange="saveSettings()"><option value="m">metres</option><option value="ft">feet</option></select>
+    </div>
+    <div class="settings-row"><span class="settings-label">Wind speed unit</span>
+      <select class="sel-inline" id="set-windUnit" onchange="saveSettings()"><option value="mph">mph</option><option value="kph">kph</option><option value="kts">knots</option></select>
+    </div>
+    <div class="settings-row"><span class="settings-label">Distance unit</span>
+      <select class="sel-inline" id="set-distUnit" onchange="saveSettings()"><option value="km">km</option><option value="mi">miles</option></select>
+    </div>
+  </div>
+
+  <div class="sec-label">Conditions tags</div>
+  <div class="settings-group" style="padding:14px 16px">
+    <div class="tag-wrap" id="conditionTagSettings"></div>
+    <div class="add-tag-row">
+      <input type="text" id="set-newCondition" placeholder="Add condition tag…">
+      <button onclick="addConditionTag()">+ Add</button>
+    </div>
+  </div>
+
+  <div class="sec-label">Pilots</div>
+  <div class="settings-group" id="pilotSettingsList"></div>
+  <div class="add-tag-row" style="margin-bottom:16px">
+    <input type="text" id="set-newPilot" placeholder="Add pilot name…">
+    <button onclick="addPilotFromSettings()">+ Add</button>
+  </div>
+
+  <div class="sec-label">Data</div>
+  <div class="settings-group">
+    <div class="settings-row" onclick="exportExcel()" style="cursor:pointer"><span class="settings-label">Export to Excel</span><span class="settings-val">📊</span></div>
+    <div class="settings-row" onclick="exportJSON()" style="cursor:pointer"><span class="settings-label">Export backup (JSON)</span><span class="settings-val">↓</span></div>
+    <div class="settings-row" onclick="document.getElementById('importFile').click()" style="cursor:pointer"><span class="settings-label">Import backup (JSON)</span><span class="settings-val">↑</span>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+    </div>
+  </div>
+  <button class="btn btn-ghost" onclick="closeOverlay('settingsOverlay')" style="margin-top:8px">Done</button>
+</div>
+</div>
+
+<!-- Image viewer -->
+<div id="imgViewer">
+  <button id="imgViewer-close" onclick="document.getElementById('imgViewer').classList.remove('open')">✕</button>
+  <img id="imgViewerImg" src="" alt="">
+</div>
+
+<script>
+// ===== CONFIG =====
+const CLIENT_ID='298980036793-06mi3ca1bqu65f1a3ssf8h27fljhho9c.apps.googleusercontent.com';
+const SCOPES='https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILE_NAME='uplift-logbook.json';
+const STORE='uplift_v1';
+const FLIGHT_TYPES=['Sledder','Soaring','Thermal','XC','Triangle','Comp','Vol-biv','SIV','Acro'];
+const DEFAULT_CONDITIONS=['☀️ Sunny stable','⛅ Partly cloudy','🌤 Thermic / active','💨 Strong & gusty','🌧 Light rain','🌫 Low cloud / fog','🌪 Turbulent','🌊 Sea breeze','❄️ Cold & stable'];
+const PIE_COLORS=['#f2a92e','#4a90e2','#3ecf8e','#e05555','#a855f7','#f97316','#06b6d4','#84cc16','#ec4899','#6366f1'];
+const GEAR_CATS=[{id:'wing',icon:'🪂',label:'Wing'},{id:'harness',icon:'🦺',label:'Harness'},{id:'reserve',icon:'🛟',label:'Reserve'}];
+
+// ===== STATE =====
+let flights=[],notes=[],settings={startNum:200,altUnit:'m',windUnit:'mph',distUnit:'km',defaultWing:'',theme:'dark'};
+let siteData={},pilots=[],conditions=[...DEFAULT_CONDITIONS],gear={wing:[],harness:[],reserve:[]};
+let accessToken=null,driveFileId=null,userInfo=null,isOffline=false;
+let syncTimeout=null;
+let editingFlightId=null,editingNoteId=null,editingGearCat=null;
+let launchRating=0,flightRating=0,landingRating=0,launchType='forward';
+let selectedPilots=[],selectedFlightTypes=[],selectedConditions=[];
+let pendingPhotos=[],existingPhotos=[];
+let notePendingPhotos=[],noteExistingPhotos=[];
+let gearPendingPhotos=[],gearExistingPhotos=[];
+let currentTab='log';
+let dragNote=null,dragNoteIdx=null;
+let dragGearCat=null,dragGearIdx=null;
+let gearSivDone=false,gearWaterDone=false,gearEditIdx=-1;
+
+// ===== PERSIST =====
+function localLoad(){
+  try{
+    const d=JSON.parse(localStorage.getItem(STORE))||{};
+    flights=d.flights||[];notes=d.notes||[];
+    settings=Object.assign({startNum:200,altUnit:'m',windUnit:'mph',distUnit:'km',defaultWing:'',theme:'dark'},d.settings||{});
+    siteData=d.siteData||{};pilots=d.pilots||[];
+    conditions=d.conditions||[...DEFAULT_CONDITIONS];
+    gear={wing:[],harness:[],reserve:[]};const dg=d.gear||{};['wing','harness','reserve'].forEach(k=>{if(Array.isArray(dg[k]))gear[k]=dg[k];else if(dg[k]&&dg[k].name)gear[k]=[dg[k]];});
+    driveFileId=d.driveFileId||null;
+    if(d.savedUserInfo)userInfo=d.savedUserInfo;
+    // Robustly migrate gear from any old format to arrays
+    ['wing','harness','reserve'].forEach(k=>{
+      if(!Array.isArray(gear[k])){
+        if(gear[k]&&typeof gear[k]==='object'&&gear[k].name){
+          gear[k]=[gear[k]];// was a single object, wrap in array
+        } else {
+          gear[k]=[];// was empty or invalid
+        }
+      }
+      // Remove any invalid entries
+      gear[k]=gear[k].filter(g=>g&&typeof g==='object');
+    });
+    applyTheme(settings.theme||'dark');
+  }catch(e){flights=[];notes=[];gear={wing:[],harness:[],reserve:[]};}
+}
+function localSave(){
+  localStorage.setItem(STORE,JSON.stringify({flights,notes,settings,siteData,pilots,conditions,gear,driveFileId,savedUserInfo:userInfo}));
+}
+function getLogbookData(){return{flights,notes,settings,siteData,pilots,conditions,gear,driveFileId,version:3,savedAt:Date.now()};}
+function applyLogbookData(d){
+  flights=d.flights||[];notes=d.notes||[];
+  settings=Object.assign({startNum:200,altUnit:'m',windUnit:'mph',distUnit:'km',defaultWing:'',theme:'dark'},d.settings||{});
+  siteData=d.siteData||{};pilots=d.pilots||[];
+  conditions=d.conditions||[...DEFAULT_CONDITIONS];
+  gear={wing:[],harness:[],reserve:[]};const dg=d.gear||{};['wing','harness','reserve'].forEach(k=>{if(Array.isArray(dg[k]))gear[k]=dg[k];else if(dg[k]&&dg[k].name)gear[k]=[dg[k]];});
+  if(d.driveFileId)driveFileId=d.driveFileId;
+  applyTheme(settings.theme||'dark');
+}
+function scheduleSave(){localSave();if(accessToken){clearTimeout(syncTimeout);syncTimeout=setTimeout(()=>saveToDrive(),2000);}}
+
+// ===== SYNC =====
+function showSync(msg,type,dur=3000){const b=document.getElementById('syncBar');b.textContent=msg;b.className='show '+type;if(dur>0)setTimeout(()=>{b.className='';},dur);}
+function signInWithGoogle(){
+  const client=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES+' https://www.googleapis.com/auth/userinfo.profile',callback:(resp)=>{
+    if(resp.error){showSync('Sign in failed','error');return;}
+    accessToken=resp.access_token;
+    fetchUserInfo().then(()=>{showApp();syncFromDrive();});
+  }});
+  client.requestAccessToken();
+}
+async function fetchUserInfo(){
+  try{
+    const r=await fetch('https://www.googleapis.com/oauth2/v1/userinfo',{headers:{Authorization:'Bearer '+accessToken}});
+    userInfo=await r.json();
+    document.getElementById('userAvatar').src=userInfo.picture||'';
+    document.getElementById('userPillName').textContent=userInfo.given_name||userInfo.name||'Pilot';
+    document.getElementById('userMenuName').textContent=userInfo.name||'';
+    document.getElementById('userPill').style.display='flex';
+  }catch(e){}
+}
+function useOffline(){isOffline=true;showApp();}
+function showApp(){
+  document.getElementById('signinScreen').classList.add('hidden');
+  document.getElementById('app').style.display='flex';
+  document.getElementById('fab').style.display='flex';
+  renderFlights();updateStats();
+}
+function signOut(){
+  if(accessToken)google.accounts.oauth2.revoke(accessToken,()=>{});
+  accessToken=null;userInfo=null;isOffline=false;
+  document.getElementById('userPill').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('fab').style.display='none';
+  document.getElementById('signinScreen').classList.remove('hidden');
+  closeOverlay('settingsOverlay');closeUserMenu();
+}
+async function driveRequest(url,opts={}){
+  // Attempt request, if 401 try to refresh token once
+  const resp=await fetch(url,{...opts,headers:{Authorization:'Bearer '+accessToken,...(opts.headers||{})}});
+  if(resp.status===401){
+    // Token expired - try silent refresh
+    await new Promise((resolve)=>{
+      try{
+        const client=google.accounts.oauth2.initTokenClient({
+          client_id:CLIENT_ID,scope:SCOPES,
+          callback:(r)=>{if(!r.error){accessToken=r.access_token;}resolve();}
+        });
+        client.requestAccessToken({prompt:''});// empty prompt = silent
+      }catch(e){resolve();}
+    });
+    if(accessToken){
+      return fetch(url,{...opts,headers:{Authorization:'Bearer '+accessToken,...(opts.headers||{})}});
+    }
+  }
+  return resp;
+}
+
+async function syncFromDrive(){
+  if(!accessToken){
+    showSync('Not signed in — tap Chris to sign in','offline');return;
+  }
+  showSync('Syncing…','syncing',0);
+  try{
+    if(!driveFileId){
+      const r=await driveRequest(`https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILE_NAME}'+and+trashed=false&fields=files(id)`);
+      const data=await r.json();
+      if(data.files&&data.files.length>0)driveFileId=data.files[0].id;
+    }
+    if(driveFileId){
+      const r=await driveRequest(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`);
+      if(r.ok){applyLogbookData(await r.json());localSave();renderFlights();updateStats();}
+      else if(r.status===401){showSync('Session expired — tap Chris to sign in again','error');return;}
+    }else{await saveToDrive();}
+    showSync('✓ Synced','synced');
+  }catch(e){
+    if(navigator.onLine){showSync('Sync failed — check connection','error');}
+    else{showSync('Offline — will sync when connected','offline');}
+  }
+}
+async function saveToDrive(){
+  if(!accessToken){localSave();return;}
+  const body=JSON.stringify(getLogbookData());
+  try{
+    if(driveFileId){
+      await driveRequest(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+    }else{
+      const meta=await driveRequest('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:DRIVE_FILE_NAME,mimeType:'application/json'})});
+      driveFileId=(await meta.json()).id;
+      await driveRequest(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+    }
+    localSave();
+  }catch(e){localSave();}
+}
+function syncNow(){closeUserMenu();if(accessToken)syncFromDrive();}
+function toggleUserMenu(){document.getElementById('userMenu').classList.toggle('open');}
+function closeUserMenu(){document.getElementById('userMenu').classList.remove('open');}
+
+// ===== HELPERS =====
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function totalMins(h,m){return(parseInt(h)||0)*60+(parseInt(m)||0);}
+function fmtDur(h,m){h=parseInt(h)||0;m=parseInt(m)||0;if(!h&&!m)return'—';if(!h)return m+'m';if(!m)return h+'h';return h+'h '+m+'m';}
+function fmtDate(d){if(!d)return'';return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function fmtDateTime(d,t){let s=fmtDate(d);if(t)s+=' · '+t;return s;}
+function stars(n,total=5,sz=''){return Array.from({length:total},(_,i)=>`<span class="s${i<n?'':' e'}"${sz?` style="font-size:${sz}"`:''}>★</span>`).join('');}
+function nextFlightNum(){if(!flights.length)return settings.startNum+1;const mx=Math.max(...flights.map(f=>f.num||0));return Math.max(mx+1,settings.startNum+1);}
+function parseDuration(s){
+  if(!s)return{h:0,m:0};s=s.trim().toLowerCase();
+  let m=s.match(/^(\d+)[h:](\d+)m?$/);if(m)return{h:parseInt(m[1]),m:parseInt(m[2])};
+  m=s.match(/^(\d+)m$/);if(m){const t=parseInt(m[1]);return{h:Math.floor(t/60),m:t%60};}
+  m=s.match(/^(\d+)h$/);if(m)return{h:parseInt(m[1]),m:0};
+  m=s.match(/^(\d+)\.(\d+)$/);if(m){const t=Math.round(parseFloat(s)*60);return{h:Math.floor(t/60),m:t%60};}
+  m=s.match(/^(\d+)$/);if(m){const t=parseInt(m[1]);return{h:Math.floor(t/60),m:t%60};}
+  return{h:0,m:0};
+}
+function durToStr(h,m){h=parseInt(h)||0;m=parseInt(m)||0;if(!h&&!m)return'';if(!m)return h+'h';if(!h)return m+'m';return h+'h'+m+'m';}
+function getSelectVal(id){const el=document.getElementById(id);if(el.selectedOptions&&el.selectedOptions.length)return el.selectedOptions[0].value;return el.value||'';}
+
+// ===== THEME =====
+function applyTheme(t){
+  document.body.classList.remove('theme-light','theme-hv');
+  if(t==='light')document.body.classList.add('theme-light');
+  if(t==='hv')document.body.classList.add('theme-hv');
+  ['dark','light','hv'].forEach(n=>{const el=document.getElementById('theme-'+n);if(el){el.style.outline=n===t?'3px solid var(--gold)':'2px solid transparent';el.style.outlineOffset='2px';}});
+}
+function setTheme(t){settings.theme=t;applyTheme(t);scheduleSave();}
+
+// ===== TABS =====
+function showTab(name,btn){
+  currentTab=name;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');
+  const fab=document.getElementById('fab');
+  fab.style.display='flex';// reset - gear tab will hide it below
+  if(name==='notes'){fab.innerHTML=`<svg viewBox="0 0 18 18" fill="none"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> New Note`;}
+  else if(name==='gear'){fab.style.display='none';return;}
+  else{fab.innerHTML=`<svg viewBox="0 0 18 18" fill="none"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg> Log Flight`;}
+  if(name==='stats')renderStats();
+  if(name==='gear')renderGear();
+  if(name==='notes')renderNotes();
+}
+function fabTapped(){
+  if(currentTab==='notes')openNoteModal();
+  else if(currentTab==='gear')openGearModal();
+  else openFlightModal();
+}
+
+// ===== OVERLAY =====
+function closeOverlay(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+
+// ===== SITE / LAUNCH =====
+function buildSiteDropdown(sel){
+  const el=document.getElementById('f-site-select');
+  const sites=Object.keys(siteData).sort();
+  el.innerHTML='<option value="">Select site…</option>'+sites.map(s=>`<option value="${s}"${s===sel?' selected':''}>${s}</option>`).join('')+'<option value="__new__">+ Add new site…</option>';
+  el.style.display='block';document.getElementById('f-site-new').style.display='none';
+}
+function siteSelectChanged(el){
+  const ni=document.getElementById('f-site-new');
+  if(el.value==='__new__'){el.style.display='none';ni.style.display='block';ni.value='';ni.focus();buildLaunchDropdown('',null);}
+  else{ni.style.display='none';buildLaunchDropdown('',el.value||null);}
+}
+function buildLaunchDropdown(sel,site){
+  const el=document.getElementById('f-launch-select');
+  const launches=site&&siteData[site]?[...siteData[site]]:[];
+  el.innerHTML='<option value="">Select launch…</option>'+launches.map(l=>`<option value="${l}"${l===sel?' selected':''}>${l}</option>`).join('')+'<option value="__new__">+ Add new launch…</option>';
+  el.style.display='block';document.getElementById('f-launch-new').style.display='none';
+}
+function launchSelectChanged(el){const ni=document.getElementById('f-launch-new');if(el.value==='__new__'){el.style.display='none';ni.style.display='block';ni.value='';ni.focus();}else ni.style.display='none';}
+function getCurrentSite(){const sel=document.getElementById('f-site-select');if(sel.style.display!=='none'){const v=getSelectVal('f-site-select');if(v&&v!=='__new__')return v;}return document.getElementById('f-site-new').value.trim();}
+function getCurrentLaunch(){const sel=document.getElementById('f-launch-select');if(sel.style.display!=='none'){const v=getSelectVal('f-launch-select');if(v&&v!=='__new__')return v;}return document.getElementById('f-launch-new').value.trim();}
+
+// ===== GEAR DROPDOWNS =====
+function getGearNames(cat){
+  // Only return names from the gear list - no flight history duplicates
+  const arr=Array.isArray(gear[cat])?gear[cat]:[];
+  return arr.map(g=>g.name).filter(Boolean);
+}
+function getGearItem(cat,name){return(gear[cat]||[]).find(g=>g.name===name)||null;}
+
+function buildGearDropdown(cat,selVal){
+  const selId='f-'+cat+'-select';const newId='f-'+cat+'-new';
+  const el=document.getElementById(selId);if(!el)return;
+  const names=getGearNames(cat);
+  el.innerHTML='<option value="">Select '+cat+'…</option>'+names.map(n=>`<option value="${n}"${n===selVal?' selected':''}>${n}</option>`).join('')+'<option value="__new__">+ Add new '+cat+'…</option>';
+  el.style.display='block';
+  const ni=document.getElementById(newId);if(ni)ni.style.display='none';
+  // Auto-select if only one
+  if(names.length===1&&!selVal){el.value=names[0];}
+}
+
+function gearSelectChanged(el,cat){
+  const newId='f-'+cat+'-new';const ni=document.getElementById(newId);
+  if(el.value==='__new__'){el.style.display='none';ni.style.display='block';ni.value='';ni.focus();}
+  else{ni.style.display='none';}
+}
+
+function getCurrentGear(cat){
+  const selId='f-'+cat+'-select';const newId='f-'+cat+'-new';
+  const sel=document.getElementById(selId);
+  if(sel&&sel.style.display!=='none'){const v=getSelectVal(selId);if(v&&v!=='__new__')return v;}
+  const ni=document.getElementById(newId);return ni?ni.value.trim():'';
+}
+
+// If free-text gear entry, add to gear list automatically
+function autoAddGearFromFreeText(cat,name){
+  if(!name)return;
+  if(!Array.isArray(gear[cat]))gear[cat]=[];
+  if(!gear[cat].find(g=>g.name===name)){gear[cat].push({name,id:uid()});}
+}
+
+// Keep old name for compatibility
+function buildWingDropdown(selWing){buildGearDropdown('wing',selWing);}
+function getCurrentWing(){return getCurrentGear('wing');}
+
+// ===== CONDITIONS =====
+function buildConditionChips(){
+  document.getElementById('conditionChips').innerHTML=conditions.map(c=>`
+    <div class="ms-chip${selectedConditions.includes(c)?' selected':''}" onclick="toggleCondition('${c.replace(/'/g,"\\'")}',this)"
+      style="background:${selectedConditions.includes(c)?'rgba(242,169,46,0.15)':'var(--surface)'};border:1px solid ${selectedConditions.includes(c)?'var(--gold)':'var(--border)'};border-radius:50px;padding:7px 12px;font-size:13px;color:${selectedConditions.includes(c)?'var(--gold)':'var(--text2)'};cursor:pointer;font-weight:${selectedConditions.includes(c)?'600':'400'}">${c}</div>`).join('');
+}
+function toggleCondition(c,el){
+  if(selectedConditions.includes(c)){selectedConditions=selectedConditions.filter(x=>x!==c);el.style.background='var(--surface)';el.style.borderColor='var(--border)';el.style.color='var(--text2)';el.style.fontWeight='400';}
+  else{selectedConditions.push(c);el.style.background='rgba(242,169,46,0.15)';el.style.borderColor='var(--gold)';el.style.color='var(--gold)';el.style.fontWeight='600';}
+}
+function renderConditionSettings(){
+  document.getElementById('conditionTagSettings').innerHTML=conditions.map((c,i)=>`
+    <div class="tag-item">${c}<span class="tag-item-del" onclick="removeConditionTag(${i})">✕</span></div>`).join('');
+}
+function addConditionTag(){
+  const inp=document.getElementById('set-newCondition');const v=inp.value.trim();if(!v)return;
+  if(!conditions.includes(v)){conditions.push(v);scheduleSave();}inp.value='';renderConditionSettings();
+}
+function removeConditionTag(i){conditions.splice(i,1);scheduleSave();renderConditionSettings();}
+
+// ===== PILOTS =====
+function buildPilotDropdown(){
+  const el=document.getElementById('f-pilot-select');
+  const rem=pilots.filter(p=>!selectedPilots.includes(p));
+  el.innerHTML='<option value="">Select person…</option>'+rem.map(p=>`<option value="${p}">${p}</option>`).join('')+'<option value="__new__">+ Add new person…</option>';
+}
+function pilotSelectChanged(el){
+  if(!el.value)return;
+  if(el.value==='__new__'){const n=prompt('Enter pilot name:');if(n&&n.trim()){const nm=n.trim();if(!pilots.includes(nm))pilots.push(nm);if(!selectedPilots.includes(nm))selectedPilots.push(nm);}}
+  else{if(!selectedPilots.includes(el.value))selectedPilots.push(el.value);}
+  el.value='';buildPilotDropdown();renderSelectedPilots();
+}
+function renderSelectedPilots(){
+  document.getElementById('selectedPilotChips').innerHTML=selectedPilots.map(p=>`<div style="background:rgba(242,169,46,0.12);border:1px solid rgba(242,169,46,0.3);border-radius:50px;padding:5px 12px;font-size:13px;color:var(--gold);display:flex;align-items:center;gap:6px">${p}<span onclick="removePilot('${p.replace(/'/g,"\\'")}',this.parentElement)" style="cursor:pointer;opacity:0.6;font-size:15px;line-height:1">✕</span></div>`).join('');
+  buildPilotDropdown();
+}
+function removePilot(name){selectedPilots=selectedPilots.filter(p=>p!==name);renderSelectedPilots();}
+function renderPilotSettings(){
+  const el=document.getElementById('pilotSettingsList');
+  if(!pilots.length){el.innerHTML='<div class="settings-row"><span class="settings-label" style="color:var(--text3)">No pilots added yet</span></div>';return;}
+  el.innerHTML=pilots.map(p=>`<div class="settings-row"><span class="settings-label">${p}</span><span onclick="removePilotFromSettings('${p.replace(/'/g,"\\'")}',this)" style="color:var(--red);cursor:pointer;font-size:13px">Remove</span></div>`).join('');
+}
+function addPilotFromSettings(){const inp=document.getElementById('set-newPilot');const n=inp.value.trim();if(!n)return;if(!pilots.includes(n)){pilots.push(n);scheduleSave();}inp.value='';renderPilotSettings();}
+function removePilotFromSettings(name){pilots=pilots.filter(p=>p!==name);selectedPilots=selectedPilots.filter(p=>p!==name);scheduleSave();renderPilotSettings();}
+
+// ===== FLIGHT TYPES =====
+function buildFlightTypeChips(){
+  document.getElementById('flightTypeChips').innerHTML=FLIGHT_TYPES.map(t=>`
+    <div style="background:${selectedFlightTypes.includes(t)?'rgba(74,144,226,0.15)':'var(--surface)'};border:1px solid ${selectedFlightTypes.includes(t)?'var(--blue)':'var(--border)'};border-radius:50px;padding:7px 14px;font-size:13px;color:${selectedFlightTypes.includes(t)?'#7ab4f0':'var(--text2)'};cursor:pointer;font-weight:${selectedFlightTypes.includes(t)?'600':'400'}" onclick="toggleFT('${t}',this)">${t}</div>`).join('');
+}
+function toggleFT(t,el){
+  if(selectedFlightTypes.includes(t)){selectedFlightTypes=selectedFlightTypes.filter(x=>x!==t);el.style.background='var(--surface)';el.style.borderColor='var(--border)';el.style.color='var(--text2)';el.style.fontWeight='400';}
+  else{selectedFlightTypes.push(t);el.style.background='rgba(74,144,226,0.15)';el.style.borderColor='var(--blue)';el.style.color='#7ab4f0';el.style.fontWeight='600';}
+}
+
+// ===== STARS =====
+function setStar(w,n){
+  if(w==='launch'){launchRating=n;document.querySelectorAll('#launchRatingInput button').forEach((b,i)=>b.classList.toggle('on',i<n));}
+  else if(w==='flight'){flightRating=n;document.querySelectorAll('#flightRatingInput button').forEach((b,i)=>b.classList.toggle('on',i<n));}
+  else{landingRating=n;document.querySelectorAll('#landingRatingInput button').forEach((b,i)=>b.classList.toggle('on',i<n));}
+}
+function setLaunchType(type,el){launchType=type;document.querySelectorAll('#launchTypeGroup .toggle-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+
+// ===== UNIT LABELS =====
+function updateUnitLabels(){
+  const wu=settings.windUnit||'mph',au=settings.altUnit||'m',du=settings.distUnit||'km';
+  const wl=document.getElementById('windUnitLabel'),gl=document.getElementById('windGustLabel'),al=document.getElementById('altUnitLabel'),dl=document.getElementById('distUnitLabel');
+  if(wl)wl.textContent=wu;if(gl)gl.textContent=wu+' (gust)';
+  if(al)al.textContent=au==='m'?'metres (m)':'feet (ft)';
+  if(dl)dl.textContent=du;
+  const di=document.getElementById('f-dist');if(di)di.placeholder='Distance ('+du+')';
+  const ai=document.getElementById('f-alt');if(ai)ai.placeholder='Altitude ('+au+')';
+}
+
+// ===== OPEN FLIGHT MODAL =====
+function openFlightModal(editId){
+  editingFlightId=editId||null;
+  launchRating=0;flightRating=0;landingRating=0;launchType='forward';
+  selectedPilots=[];selectedFlightTypes=[];selectedConditions=[];
+  pendingPhotos=[];existingPhotos=[];
+  document.getElementById('flightModalTitle').textContent=editId?'Edit Flight':'Log a Flight';
+  document.getElementById('saveFlightBtn').textContent=editId?'Update Flight':'Save Flight';
+  document.getElementById('deleteFlightBtn').style.display=editId?'block':'none';
+  document.getElementById('igcParsed').style.display='none';
+  document.getElementById('photoThumbs').innerHTML='';
+  const now=new Date();
+  document.getElementById('f-date').value=now.toISOString().slice(0,10);
+  document.getElementById('f-time').value=now.toTimeString().slice(0,5);
+  ['f-dur','f-alt','f-dist','f-windSpeed','f-windGust','f-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  npReset();
+  ['f-wing-new','f-harness-new','f-reserve-new'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.style.display='none';}});
+  document.getElementById('f-windDir').value='';
+  document.querySelectorAll('#launchTypeGroup .toggle-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('#launchRatingInput button,#flightRatingInput button,#landingRatingInput button').forEach(b=>b.classList.remove('on'));
+  buildSiteDropdown('');buildLaunchDropdown('',null);buildGearDropdown('wing','');buildGearDropdown('harness','');buildGearDropdown('reserve','');
+  buildPilotDropdown();renderSelectedPilots();buildFlightTypeChips();buildConditionChips();updateUnitLabels();
+  if(editId){
+    const f=flights.find(x=>x.id===editId);if(!f)return;
+    buildSiteDropdown(f.site||'');
+    if(f.site){document.getElementById('f-site-select').value=f.site;buildLaunchDropdown(f.launchName||'',f.site);if(f.launchName)document.getElementById('f-launch-select').value=f.launchName;}
+    document.getElementById('f-date').value=f.date||now.toISOString().slice(0,10);
+    document.getElementById('f-time').value=f.time||'';
+    setNpFromHM(parseInt(f.durH)||0,parseInt(f.durM)||0);
+    document.getElementById('f-alt').value=f.alt||'';document.getElementById('f-dist').value=f.dist||'';
+    document.getElementById('f-windSpeed').value=f.windSpeed||'';document.getElementById('f-windGust').value=f.windGust||'';
+    document.getElementById('f-windDir').value=f.windDir||'';
+    document.getElementById('f-notes').value=f.notes||'';
+    buildGearDropdown('wing',f.wing||'');
+    buildGearDropdown('harness',f.harness||'');
+    buildGearDropdown('reserve',f.reserve||'');
+    launchType=f.launchType||'forward';
+    document.querySelectorAll('#launchTypeGroup .toggle-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase().includes(launchType)));
+    launchRating=f.launchRating||0;flightRating=f.flightRating||0;landingRating=f.landingRating||0;
+    document.querySelectorAll('#launchRatingInput button').forEach((b,i)=>b.classList.toggle('on',i<launchRating));
+    document.querySelectorAll('#flightRatingInput button').forEach((b,i)=>b.classList.toggle('on',i<flightRating));
+    document.querySelectorAll('#landingRatingInput button').forEach((b,i)=>b.classList.toggle('on',i<landingRating));
+    selectedPilots=f.flyingWith?[...f.flyingWith]:[];selectedFlightTypes=f.flightTypes?[...f.flightTypes]:[];
+    selectedConditions=f.conditions?[...f.conditions]:[];
+    buildPilotDropdown();renderSelectedPilots();buildFlightTypeChips();buildConditionChips();
+    existingPhotos=f.photos?[...f.photos]:[];renderPhotoThumbs();
+  }
+  document.getElementById('flightOverlay').classList.add('open');
+  setTimeout(()=>{document.getElementById('flightSheet').scrollTop=0;},50);
+}
+
+function saveFlight(){
+  try{
+  const site=getCurrentSite();if(!site){alert('Please enter a site name.');return;}
+  const launchName=getCurrentLaunch(),wing=getCurrentWing();
+  if(!siteData[site])siteData[site]=[];
+  if(launchName&&!siteData[site].includes(launchName))siteData[site].push(launchName);
+  const npD=[0,0,0,0,...npDigits].slice(-4);const dH=npD[0]*10+npD[1];const dM=npD[2]*10+npD[3];
+  const fWing=getCurrentGear('wing');const fHarness=getCurrentGear('harness');const fReserve=getCurrentGear('reserve');
+  // Auto-add free-text gear entries to gear list
+  ['wing','harness','reserve'].forEach(cat=>{
+    const name=getCurrentGear(cat);
+    if(name)autoAddGearFromFreeText(cat,name);
+  });
+  const f={
+    id:editingFlightId||uid(),
+    num:editingFlightId?(flights.find(x=>x.id===editingFlightId)?.num||nextFlightNum()):nextFlightNum(),
+    site,launchName,date:document.getElementById('f-date').value,time:document.getElementById('f-time').value,
+    launchType,durH:dH,durM:dM,
+    alt:document.getElementById('f-alt').value,altUnit:settings.altUnit,
+    dist:document.getElementById('f-dist').value,distUnit:settings.distUnit,
+    windSpeed:document.getElementById('f-windSpeed').value,windGust:document.getElementById('f-windGust').value,
+    windUnit:settings.windUnit,windDir:document.getElementById('f-windDir').value,
+    conditions:[...selectedConditions],wing:fWing,harness:fHarness,reserve:fReserve,
+    flyingWith:[...selectedPilots],flightTypes:[...selectedFlightTypes],
+    launchRating,flightRating,landingRating,
+    notes:document.getElementById('f-notes').value.trim(),
+    photos:[...existingPhotos,...pendingPhotos],savedAt:Date.now()
+  };
+  if(editingFlightId){const idx=flights.findIndex(x=>x.id===editingFlightId);if(idx>-1)flights[idx]=f;}
+  else flights.unshift(f);
+  scheduleSave();closeOverlay('flightOverlay');renderFlights();updateStats();
+  }catch(err){alert('Could not save flight: '+err.message);console.error('saveFlight error:',err);}
+}
+let _deletingFlight=false;
+function deleteFlight(){
+  if(_deletingFlight)return;
+  if(!editingFlightId)return;
+  if(!confirm('Delete this flight? This cannot be undone.'))return;
+  _deletingFlight=true;
+  try{
+    flights=flights.filter(f=>f.id!==editingFlightId);
+    scheduleSave();closeOverlay('flightOverlay');closeOverlay('detailOverlay');renderFlights();updateStats();
+  }finally{setTimeout(()=>{_deletingFlight=false;},600);}
+}
+
+// ===== PHOTOS =====
+function renderPhotoThumbs(){
+  const all=[...existingPhotos,...pendingPhotos];
+  document.getElementById('photoThumbs').innerHTML=all.map((src,i)=>`<div class="photo-thumb-wrap"><img src="${src}" onclick="viewImg('${src}')"><button class="photo-del" onclick="removePhoto(${i})">✕</button></div>`).join('');
+}
+function removePhoto(i){
+  const all=[...existingPhotos,...pendingPhotos];const oe=existingPhotos.length;
+  all.splice(i,1);existingPhotos=all.slice(0,i<oe?oe-1:oe);pendingPhotos=all.slice(existingPhotos.length);
+  renderPhotoThumbs();
+}
+function addPhotos(input){
+  Array.from(input.files).forEach(f=>{const r=new FileReader();r.onload=e=>{pendingPhotos.push(e.target.result);renderPhotoThumbs();};r.readAsDataURL(f);});
+  input.value='';
+}
+
+// ===== IGC =====
+function parseIGC(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n');let date='',maxAlt=0,startTime=null,endTime=null;
+    lines.forEach(line=>{
+      line=line.trim();
+      if(line.startsWith('HFDTE')){const m=line.match(/(\d{2})(\d{2})(\d{2})/);if(m)date=`20${m[3]}-${m[2]}-${m[1]}`;}
+      if(line.startsWith('B')&&line.length>=35){
+        const h=parseInt(line.slice(1,3)),mn=parseInt(line.slice(3,5)),sc=parseInt(line.slice(5,7));
+        const ts=h*3600+mn*60+sc;if(startTime===null)startTime=ts;endTime=ts;
+        const alt=parseInt(line.slice(30,35));if(!isNaN(alt)&&alt>maxAlt)maxAlt=alt;
+      }
+    });
+    if(date)document.getElementById('f-date').value=date;
+    if(maxAlt>0)document.getElementById('f-alt').value=maxAlt;
+    if(startTime!==null&&endTime!==null){
+      let dur=endTime-startTime;if(dur<0)dur+=86400;
+      setNpFromHM(Math.floor(dur/3600),Math.floor((dur%3600)/60));
+      document.getElementById('f-time').value=String(Math.floor(startTime/3600)).padStart(2,'0')+':'+String(Math.floor((startTime%3600)/60)).padStart(2,'0');
+    }
+    document.getElementById('igcParsed').style.display='block';
+  };
+  reader.readAsText(file);input.value='';
+}
+
+// ===== RENDER FLIGHTS =====
+function filterFlights(q){renderFlights(q);}
+function renderFlights(q=''){
+  const list=document.getElementById('flightsList');
+  let shown=[...flights].sort((a,b)=>{if(b.date!==a.date)return(b.date||'').localeCompare(a.date||'');return(b.num||0)-(a.num||0);});
+  if(q){const ql=q.toLowerCase();shown=shown.filter(f=>(f.site||'').toLowerCase().includes(ql)||(f.launchName||'').toLowerCase().includes(ql)||(f.notes||'').toLowerCase().includes(ql)||(f.wing||'').toLowerCase().includes(ql)||(f.flyingWith||[]).some(p=>p.toLowerCase().includes(ql))||(f.flightTypes||[]).some(t=>t.toLowerCase().includes(ql))||(f.conditions||[]).some(c=>c.toLowerCase().includes(ql)));}
+  if(!shown.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🪂</div><h3>${q?'No results':'No flights yet'}</h3><p>${q?'Try a different search.':'Tap the gold button to log your first flight.'}</p></div>`;return;}
+  list.innerHTML=shown.map(f=>{
+    const chips=[];const dur=fmtDur(f.durH,f.durM);
+    if(dur!=='—')chips.push(`<span class="chip g">⏱ ${dur}</span>`);
+    if(f.alt)chips.push(`<span class="chip g">⬆ ${f.alt}${f.altUnit||'m'}</span>`);
+    if(f.dist)chips.push(`<span class="chip g">↔ ${f.dist}${f.distUnit||'km'}</span>`);
+    if(f.launchType)chips.push(`<span class="chip b">${f.launchType==='forward'?'⬆ Fwd':f.launchType==='reverse'?'↩ Rev':'🐍 Cobra'}</span>`);
+    if(f.conditions&&f.conditions.length)f.conditions.forEach(c=>chips.push(`<span class="chip">${c}</span>`));
+    if(f.wing)chips.push(`<span class="chip">🪂 ${f.wing}</span>`);
+    if(f.flyingWith&&f.flyingWith.length)chips.push(`<span class="chip">👥 ${f.flyingWith.join(', ')}</span>`);
+    if(f.flightTypes&&f.flightTypes.length)f.flightTypes.forEach(t=>chips.push(`<span class="chip p">${t}</span>`));
+    const thumb=f.photos&&f.photos[0]?`<img class="fc-photo-thumb" src="${f.photos[0]}" onclick="event.stopPropagation();viewImg('${f.photos[0]}')">`:'' ;
+    return`<div class="flight-card" onclick="showDetail('${f.id}')"><div class="fc-top"><div style="flex:1;min-width:0"><div class="fc-num">Flight #${f.num||'—'}</div><div class="fc-site">${f.site}</div>${f.launchName?`<div class="fc-launch-name">↗ ${f.launchName}</div>`:''}<div class="star-row">${stars(f.flightRating||0)}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0"><div class="fc-date">${fmtDateTime(f.date,f.time)}</div>${thumb}</div></div>${chips.length?`<div class="fc-chips">${chips.join('')}</div>`:''}${f.notes?`<div class="fc-notes">${f.notes}</div>`:''}</div>`;
+  }).join('');
+}
+
+// ===== DETAIL =====
+function showDetail(id){
+  const f=flights.find(x=>x.id===id);if(!f)return;
+  const wp=[];if(f.windSpeed)wp.push(f.windSpeed+(f.windUnit?' '+f.windUnit:''));if(f.windGust)wp.push('gusts '+f.windGust);if(f.windDir)wp.push(f.windDir);
+  const wind=wp.join(' · ')||'—';
+  const photos=f.photos&&f.photos.length?`<div class="detail-photos">${f.photos.map(p=>`<img src="${p}" onclick="viewImg('${p}')">`).join('')}</div>`:'';
+  document.getElementById('detailContent').innerHTML=`
+    <div class="handle"></div>
+    <div class="detail-hero">
+      <div class="detail-num">Flight #${f.num||'—'}</div>
+      <div class="detail-site">${f.site}</div>
+      ${f.launchName?`<div class="detail-launch-name">↗ ${f.launchName}</div>`:''}
+      <div class="detail-date">${fmtDateTime(f.date,f.time)}</div>
+      ${(f.launchRating||f.flightRating||f.landingRating)?`
+      <div class="detail-stars">${stars(f.launchRating||0,5,'17px')}<span class="detail-stars-lbl">launch</span></div>
+      <div class="detail-stars">${stars(f.flightRating||0,5,'17px')}<span class="detail-stars-lbl">flight</span></div>
+      <div class="detail-stars">${stars(f.landingRating||0,5,'17px')}<span class="detail-stars-lbl">landing</span></div>`:''}
+    </div>
+    <div class="detail-grid">
+      <div class="detail-cell"><div class="dc-lbl">Duration</div><div class="dc-val">${fmtDur(f.durH,f.durM)}</div></div>
+      <div class="detail-cell"><div class="dc-lbl">Max Altitude</div><div class="dc-val">${f.alt?(f.alt+(f.altUnit||'m')):'—'}</div></div>
+      <div class="detail-cell"><div class="dc-lbl">Distance</div><div class="dc-val">${f.dist?f.dist+(f.distUnit||'km'):'—'}</div></div>
+      <div class="detail-cell"><div class="dc-lbl">Launch type</div><div class="dc-val sm">${f.launchType==='forward'?'⬆ Forward':f.launchType==='reverse'?'↩ Reverse':'🐍 Cobra'}</div></div>
+      <div class="detail-cell full"><div class="dc-lbl">Wind at launch</div><div class="dc-val sm">${wind}</div></div>
+      ${f.conditions&&f.conditions.length?`<div class="detail-cell full"><div class="dc-lbl">Conditions</div><div class="dc-val sm">${f.conditions.join(' · ')}</div></div>`:''}
+      <div class="detail-cell full"><div class="dc-lbl">Wing</div><div class="dc-val sm">${f.wing||'—'}</div></div>
+      ${f.harness?`<div class="detail-cell full"><div class="dc-lbl">Harness</div><div class="dc-val sm">${f.harness}</div></div>`:''}
+      ${f.reserve?`<div class="detail-cell full"><div class="dc-lbl">Reserve</div><div class="dc-val sm">${f.reserve}</div></div>`:''}
+      ${f.flyingWith&&f.flyingWith.length?`<div class="detail-cell full"><div class="dc-lbl">Flying with</div><div class="dc-val sm">${f.flyingWith.join(', ')}</div></div>`:''}
+      ${f.flightTypes&&f.flightTypes.length?`<div class="detail-cell full"><div class="dc-lbl">Flight type</div><div class="dc-val sm">${f.flightTypes.join(' · ')}</div></div>`:''}
+    </div>
+    ${f.notes?`<div class="detail-notes">${f.notes}</div>`:''}
+    ${photos}
+    <button class="btn btn-gold" onclick="closeOverlay('detailOverlay');openFlightModal('${f.id}')">Edit Flight</button>
+    <button class="btn btn-ghost" onclick="closeOverlay('detailOverlay')" style="margin-top:8px">Close</button>`;
+  document.getElementById('detailSheet').scrollTop=0;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+// ===== STATS =====
+function updateStats(){
+  // Always compute fresh from source data
+  const count=flights.length;
+  const mins=flights.reduce((s,f)=>s+totalMins(f.durH,f.durM),0);
+  const hours=Math.floor(mins/60);
+  const sites=new Set(flights.map(f=>f.site)).size;
+  const next=nextFlightNum();
+  // Update header strip
+  const sf=document.getElementById('sFlights');if(sf)sf.textContent=count;
+  const sh=document.getElementById('sHours');if(sh)sh.textContent=hours+'h';
+  const ss=document.getElementById('sSites');if(ss)ss.textContent=sites;
+  const sn=document.getElementById('sNext');if(sn)sn.textContent='#'+next;
+  const nf=document.getElementById('set-nextFlight');if(nf)nf.textContent='#'+next;
+}
+
+function makePie(canvasId,data,colors){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');const W=canvas.width=200,H=canvas.height=200;
+  ctx.clearRect(0,0,W,H);
+  const total=data.reduce((s,d)=>s+d.value,0);if(!total)return;
+  let angle=-Math.PI/2;const cx=W/2,cy=H/2,r=80;
+  data.forEach((d,i)=>{
+    const slice=(d.value/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+slice);ctx.closePath();
+    ctx.fillStyle=colors[i%colors.length];ctx.fill();
+    angle+=slice;
+  });
+  // Donut hole
+  ctx.beginPath();ctx.arc(cx,cy,40,0,Math.PI*2);ctx.fillStyle='var(--bg2)';ctx.fill();
+}
+
+function renderPie(containerId,data,title){
+  if(!data.length){document.getElementById(containerId).innerHTML='<p style="color:var(--text3);font-size:14px;margin-bottom:10px">Not enough data yet.</p>';return;}
+  const total=data.reduce((s,d)=>s+d.value,0);
+  const canvasId=containerId+'Canvas';
+  document.getElementById(containerId).innerHTML=`
+    <div class="pie-wrap">
+      <div class="pie-title">${title}</div>
+      <div class="pie-inner">
+        <canvas id="${canvasId}" width="200" height="200" style="width:120px;height:120px;flex-shrink:0"></canvas>
+        <div class="pie-legend">
+          ${data.map((d,i)=>`<div class="pie-legend-item"><div class="pie-legend-dot" style="background:${PIE_COLORS[i%PIE_COLORS.length]}"></div><span>${d.label} <strong style="color:var(--text)">${Math.round(d.value/total*100)}%</strong></span></div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  requestAnimationFrame(()=>makePie(canvasId,data,PIE_COLORS));
+}
+
+function renderStats(){
+  const mins=flights.reduce((s,f)=>s+totalMins(f.durH,f.durM),0);const h=Math.floor(mins/60),m=mins%60;
+  const sites=new Set(flights.map(f=>f.site));
+  const rated=flights.filter(f=>f.flightRating);const avgR=rated.length?(rated.reduce((s,f)=>s+f.flightRating,0)/rated.length).toFixed(1):'—';
+  const lrated=flights.filter(f=>f.landingRating);const avgL=lrated.length?(lrated.reduce((s,f)=>s+f.landingRating,0)/lrated.length).toFixed(1):'—';
+  const alts=flights.filter(f=>f.alt&&!isNaN(f.alt));let maxAlt='—';
+  if(alts.length){const best=alts.reduce((mx,f)=>{const v=parseFloat(f.alt);return v>mx.v?{v,u:f.altUnit}:mx;},{v:-Infinity,u:'m'});maxAlt=best.v+(best.u||'m');}
+  document.getElementById('bigStats').innerHTML=`
+    <div class="big-card"><div class="big-num">${flights.length}</div><div class="big-desc">Total flights</div></div>
+    <div class="big-card"><div class="big-num">${h}<span class="big-unit">h ${m}m</span></div><div class="big-desc">Total airtime</div></div>
+    <div class="big-card"><div class="big-num">${sites.size}</div><div class="big-desc">Different sites</div></div>
+    <div class="big-card"><div class="big-num">${maxAlt}</div><div class="big-desc">Best altitude</div></div>
+    <div class="big-card"><div class="big-num">${avgR}<span class="big-unit"> ★</span></div><div class="big-desc">Avg flight rating</div></div>
+    <div class="big-card"><div class="big-num">${avgL}<span class="big-unit"> ★</span></div><div class="big-desc">Avg landing rating</div></div>`;
+
+  // Sites bar
+  const sc={};flights.forEach(f=>{sc[f.site]=(sc[f.site]||0)+1;});
+  const ss=Object.entries(sc).sort((a,b)=>b[1]-a[1]).slice(0,8);const smx=ss[0]?.[1]||1;
+  document.getElementById('sitesStats').innerHTML=ss.length?ss.map(([s,c])=>`<div class="bar-row"><span class="bar-name">${s}</span><div class="bar-right"><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/smx*100)}%"></div></div><span class="bar-count">${c}</span></div></div>`).join(''):'<p style="color:var(--text3);font-size:14px">No flights yet.</p>';
+
+  // Launch type pie
+  const fwd=flights.filter(f=>f.launchType==='forward').length;
+  const rev=flights.filter(f=>f.launchType==='reverse').length;
+  const cob=flights.filter(f=>f.launchType==='cobra').length;
+  const launchData=[{label:'Forward',value:fwd},{label:'Reverse',value:rev},{label:'Cobra',value:cob}].filter(d=>d.value>0);
+  renderPie('launchPie',launchData,'Launch Type');
+
+  // Flight type pie
+  const tc={};flights.forEach(f=>(f.flightTypes||[]).forEach(t=>{tc[t]=(tc[t]||0)+1;}));
+  const typeData=Object.entries(tc).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({label:l,value:v}));
+  renderPie('typePie',typeData,'Flight Types');
+
+  // Best flights
+  const best=[...flights].filter(f=>f.flightRating).sort((a,b)=>b.flightRating-a.flightRating).slice(0,3);
+  document.getElementById('bestFlights').innerHTML=best.length?best.map(f=>`<div class="flight-card" onclick="showDetail('${f.id}')" style="margin-bottom:10px"><div class="fc-top"><div><div class="fc-num">Flight #${f.num||'—'}</div><div class="fc-site">${f.site}</div>${f.launchName?`<div class="fc-launch-name">↗ ${f.launchName}</div>`:''}<div class="star-row">${stars(f.flightRating)}</div></div><div class="fc-date">${fmtDate(f.date)}</div></div></div>`).join(''):'<p style="color:var(--text3);font-size:14px">Rate flights to see your best here.</p>';
+}
+
+// ===== NOTES =====
+function renderNotes(){
+  const list=document.getElementById('notesList');
+  if(!notes.length){list.innerHTML=`<div class="empty"><div class="empty-icon">📓</div><h3>No notes yet</h3><p>Tap the gold button to add site notes, reminders, or anything worth keeping.</p></div>`;return;}
+  list.innerHTML=notes.map((n,i)=>`
+    <div class="note-card" onclick="openNoteModal('${n.id}')" draggable="true"
+      ondragstart="noteDragStart(event,${i})" ondragover="noteDragOver(event,${i})" ondrop="noteDrop(event,${i})" ondragend="noteDragEnd()">
+      <span class="note-drag" onclick="event.stopPropagation()">⠿</span>
+      <div class="note-title">${n.title||'Untitled'}</div>
+      <div class="note-preview">${n.body||''}</div>
+      ${n.photos&&n.photos.length?`<div class="note-photos">${n.photos.slice(0,4).map(p=>`<img src="${p}" onclick="event.stopPropagation();viewImg('${p}')">`).join('')}</div>`:''}
+      <div class="note-date">${new Date(n.savedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+    </div>`).join('');
+}
+
+// Note drag to reorder
+function noteDragStart(e,i){dragNoteIdx=i;e.dataTransfer.effectAllowed='move';}
+function noteDragOver(e,i){e.preventDefault();e.dataTransfer.dropEffect='move';}
+function noteDrop(e,i){
+  e.preventDefault();if(dragNoteIdx===null||dragNoteIdx===i)return;
+  const moved=notes.splice(dragNoteIdx,1)[0];notes.splice(i,0,moved);
+  dragNoteIdx=i;scheduleSave();renderNotes();
+}
+function noteDragEnd(){dragNoteIdx=null;}
+
+function openNoteModal(editId){
+  editingNoteId=editId&&typeof editId==='string'?editId:null;
+  notePendingPhotos=[];noteExistingPhotos=[];
+  document.getElementById('noteModalTitle').textContent=editingNoteId?'Edit Note':'New Note';
+  document.getElementById('deleteNoteBtn').style.display=editingNoteId?'block':'none';
+  document.getElementById('n-title').value='';document.getElementById('n-body').value='';
+  document.getElementById('notePhotoThumbs').innerHTML='';
+  if(editingNoteId){
+    const n=notes.find(x=>x.id===editingNoteId);
+    if(n){document.getElementById('n-title').value=n.title||'';document.getElementById('n-body').value=n.body||'';noteExistingPhotos=n.photos?[...n.photos]:[];renderNotePhotoThumbs();}
+  }
+  document.getElementById('noteOverlay').classList.add('open');
+}
+function renderNotePhotoThumbs(){
+  const all=[...noteExistingPhotos,...notePendingPhotos];
+  document.getElementById('notePhotoThumbs').innerHTML=all.map((src,i)=>`<div class="photo-thumb-wrap"><img src="${src}" onclick="viewImg('${src}')"><button class="photo-del" onclick="removeNotePhoto(${i})">✕</button></div>`).join('');
+}
+function removeNotePhoto(i){
+  const all=[...noteExistingPhotos,...notePendingPhotos];const oe=noteExistingPhotos.length;
+  all.splice(i,1);noteExistingPhotos=all.slice(0,i<oe?oe-1:oe);notePendingPhotos=all.slice(noteExistingPhotos.length);
+  renderNotePhotoThumbs();
+}
+function addNotePhotos(input){
+  Array.from(input.files).forEach(f=>{const r=new FileReader();r.onload=e=>{notePendingPhotos.push(e.target.result);renderNotePhotoThumbs();};r.readAsDataURL(f);});
+  input.value='';
+}
+function saveNote(){
+  const title=document.getElementById('n-title').value.trim();const body=document.getElementById('n-body').value.trim();if(!title&&!body)return;
+  const n={id:editingNoteId||uid(),title,body,photos:[...noteExistingPhotos,...notePendingPhotos],savedAt:Date.now()};
+  if(editingNoteId){const idx=notes.findIndex(x=>x.id===editingNoteId);if(idx>-1)notes[idx]=n;}else notes.unshift(n);
+  scheduleSave();closeOverlay('noteOverlay');renderNotes();
+}
+function deleteNote(){
+  if(!editingNoteId)return;if(!confirm('Delete this note?'))return;
+  notes=notes.filter(n=>n.id!==editingNoteId);scheduleSave();closeOverlay('noteOverlay');renderNotes();
+}
+
+// ===== GEAR =====
+function gearDragStart(e,cat,i){dragGearCat=cat;dragGearIdx=i;e.dataTransfer.effectAllowed='move';}
+function gearDragOver(e,cat,i){e.preventDefault();e.dataTransfer.dropEffect='move';}
+function gearDrop(e,cat,i){
+  e.preventDefault();
+  if(dragGearCat!==cat||dragGearIdx===null||dragGearIdx===i)return;
+  const arr=gear[cat];const moved=arr.splice(dragGearIdx,1)[0];arr.splice(i,0,moved);
+  dragGearIdx=i;scheduleSave();renderGear();
+}
+function gearDragEnd(){dragGearCat=null;dragGearIdx=null;}
+
+function gearItemSub(cat,g){
+  if(cat==='wing'){
+    const wf=flights.filter(f=>f.wing&&f.wing.toLowerCase()===(g.name||'').toLowerCase());
+    const wMins=wf.reduce((s,f)=>s+totalMins(f.durH,f.durM),0);
+    const wH=Math.floor(wMins/60),wM=wMins%60;
+    return`${g.name||'Wing'} · ${wf.length} flights · ${wH}h${wM>0?wM+'m':''} airtime`;
+  } else if(cat==='harness'){
+    return g.name+(g.size?' · '+g.size:'')+(g.weight?' · '+g.weight:'')+(g.physweight?' · '+g.physweight+'kg':'');
+  } else {
+    const bits=[];if(g.sivDone)bits.push('SIV ✓');if(g.waterDone)bits.push('Water ✓');
+    if(g.physweight)bits.push(g.physweight+'kg');
+    let s=g.name||'Reserve';if(bits.length)s+=' · '+bits.join(' · ');
+    if(g.repack){const mo=(new Date()-new Date(g.repack))/(1000*60*60*24*30.44);if(mo>=6)s+=' · ⚠️ Repack overdue';else s+=` · Repack in ~${Math.ceil(6-mo)}mo`;}
+    return s;
+  }
+}
+function gearItemAlert(cat,g){
+  if(cat!=='reserve'||!g.repack)return'';
+  const mo=(new Date()-new Date(g.repack))/(1000*60*60*24*30.44);
+  return mo>=6?`<div class="gear-alert">⚠️ Reserve repack overdue! Last repacked ${Math.floor(mo)} months ago.</div>`:'';
+}
+function deleteGearItem(cat,idx,e){
+  e.stopPropagation();
+  if(!confirm('Remove this item?'))return;
+  gear[cat].splice(idx,1);scheduleSave();renderGear();
+}
+function renderGear(){
+  const list=document.getElementById('gearList');
+  list.innerHTML=GEAR_CATS.map(cat=>{
+    const arr=Array.isArray(gear[cat.id])?gear[cat.id]:[];
+    const items=arr.map((g,i)=>`
+      <div class="gear-item-row" draggable="true"
+        ondragstart="gearDragStart(event,'${cat.id}',${i})"
+        ondragover="gearDragOver(event,'${cat.id}',${i})"
+        ondrop="gearDrop(event,'${cat.id}',${i})"
+        ondragend="gearDragEnd()">
+        <span class="note-drag" onclick="event.stopPropagation()">⠿</span>
+        <div style="flex:1;cursor:pointer" onclick="openGearDetail('${cat.id}',${i})">
+          <div style="font-weight:600;font-size:14px;color:var(--text)">${gearItemSub(cat.id,g)}</div>
+          ${g.physweight?`<div style="font-size:12px;color:var(--text3);margin-top:1px">⚖️ ${g.physweight} kg</div>`:''}
+          ${gearItemAlert(cat.id,g)}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          ${g.url?`<a href="${g.url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);font-size:18px;text-decoration:none;padding:4px 6px" title="Open link">🔗</a>`:''}
+          <span onclick="deleteGearItem('${cat.id}',${i},event)" style="color:var(--red);font-size:18px;cursor:pointer;padding:4px 6px">✕</span>
+          <div style="color:var(--text3);font-size:18px;cursor:pointer" onclick="openGearDetail('${cat.id}',${i})">›</div>
+        </div>
+      </div>`).join('');
+    return`<div class="gear-category">
+      <div class="gear-cat-top" style="margin-bottom:${arr.length?'10px':'0'}">
+        <div class="gear-cat-icon">${cat.icon}</div>
+        <div class="gear-cat-info">
+          <div class="gear-cat-name">${cat.label}${arr.length>1?' ('+arr.length+')':''}</div>
+          ${!arr.length?'<div class="gear-cat-sub" style="color:var(--text3)">None added yet</div>':''}
+        </div>
+        <div onclick="event.stopPropagation();openGearDetail('${cat.id}',-1)" style="background:var(--gold);color:#040a10;border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;font-weight:700;flex-shrink:0;line-height:1">+</div>
+      </div>
+      ${items}
+    </div>`;
+  }).join('');
+}
+
+function setGearToggle(which,val,el){
+  if(which==='siv')gearSivDone=val;else gearWaterDone=val;
+  const groupId=which==='siv'?'gd-siv-group':'gd-water-group';
+  document.querySelectorAll('#'+groupId+' .toggle-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openGearDetail(catId,itemIdx=-1){
+  editingGearCat=catId;gearEditIdx=itemIdx;gearPendingPhotos=[];gearExistingPhotos=[];
+  gearSivDone=false;gearWaterDone=false;
+  const cat=GEAR_CATS.find(c=>c.id===catId);
+  const arr=Array.isArray(gear[catId])?gear[catId]:[];
+  const g=itemIdx>=0?arr[itemIdx]||{}:{};
+  document.getElementById('gearDetailTitle').textContent=cat.icon+' '+cat.label;
+  document.getElementById('gd-name').value=g.name||'';
+  document.getElementById('gd-size').value=g.size||'';
+  document.getElementById('gd-purchase').value=g.purchase||'';
+  document.getElementById('gd-url').value=g.url||'';
+  document.getElementById('gd-physweight').value=g.physweight||'';
+  document.getElementById('gd-notes').value=g.notes||'';
+
+  // Show/hide category-specific fields
+  document.getElementById('gd-wing-fields').style.display=catId==='wing'?'block':'none';
+  document.getElementById('gd-harness-fields').style.display=catId==='harness'?'block':'none';
+  document.getElementById('gd-reserve-fields').style.display=catId==='reserve'?'block':'none';
+
+  if(catId==='wing'){
+    document.getElementById('gd-rating').value=g.rating||'';
+    document.getElementById('gd-weight').value=g.weight||'';
+    document.getElementById('gd-glide').value=g.glide||'';
+    document.getElementById('gd-trimspeed').value=g.trimspeed||'';
+    document.getElementById('gd-maxspeed').value=g.maxspeed||'';
+    document.getElementById('gd-service').value=g.service||'';
+  } else if(catId==='harness'){
+    document.getElementById('gd-hweight').value=g.weight||'';
+    document.getElementById('gd-hservice').value=g.service||'';
+  } else if(catId==='reserve'){
+    document.getElementById('gd-rweight').value=g.weight||'';
+    document.getElementById('gd-repack').value=g.repack||'';
+    document.getElementById('gd-thrown').value=g.thrown||'';
+    gearSivDone=g.sivDone||false;gearWaterDone=g.waterDone||false;
+    document.querySelectorAll('#gd-siv-group .toggle-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&gearSivDone)||(i===1&&!gearSivDone)));
+    document.querySelectorAll('#gd-water-group .toggle-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&gearWaterDone)||(i===1&&!gearWaterDone)));
+  }
+
+  gearExistingPhotos=g.photos?[...g.photos]:[];
+  document.getElementById('gearPhotoThumbs').innerHTML='';renderGearPhotoThumbs();
+  document.getElementById('gearDetailSheet').scrollTop=0;
+  document.getElementById('gearDetailOverlay').classList.add('open');
+}
+function openGearModal(){document.getElementById('gearPickerOverlay').classList.add('open');}
+function renderGearPhotoThumbs(){
+  const all=[...gearExistingPhotos,...gearPendingPhotos];
+  document.getElementById('gearPhotoThumbs').innerHTML=all.map((src,i)=>`<div class="photo-thumb-wrap"><img src="${src}" onclick="viewImg('${src}')"><button class="photo-del" onclick="removeGearPhoto(${i})">✕</button></div>`).join('');
+}
+function removeGearPhoto(i){
+  const all=[...gearExistingPhotos,...gearPendingPhotos];const oe=gearExistingPhotos.length;
+  all.splice(i,1);gearExistingPhotos=all.slice(0,i<oe?oe-1:oe);gearPendingPhotos=all.slice(gearExistingPhotos.length);
+  renderGearPhotoThumbs();
+}
+function addGearPhotos(input){
+  Array.from(input.files).forEach(f=>{const r=new FileReader();r.onload=e=>{gearPendingPhotos.push(e.target.result);renderGearPhotoThumbs();};r.readAsDataURL(f);});
+  input.value='';
+}
+function saveGearDetail(){
+  const base={
+    name:document.getElementById('gd-name').value.trim(),
+    size:document.getElementById('gd-size').value.trim(),
+    purchase:document.getElementById('gd-purchase').value,
+    url:document.getElementById('gd-url').value.trim(),
+    physweight:document.getElementById('gd-physweight').value.trim(),
+    notes:document.getElementById('gd-notes').value.trim(),
+    photos:[...gearExistingPhotos,...gearPendingPhotos]
+  };
+  let g=base;
+  if(editingGearCat==='wing'){
+    g={...base,
+      rating:document.getElementById('gd-rating').value.trim(),
+      weight:document.getElementById('gd-weight').value.trim(),
+      glide:document.getElementById('gd-glide').value.trim(),
+      trimspeed:document.getElementById('gd-trimspeed').value.trim(),
+      maxspeed:document.getElementById('gd-maxspeed').value.trim(),
+      service:document.getElementById('gd-service').value};
+  } else if(editingGearCat==='harness'){
+    g={...base,
+      weight:document.getElementById('gd-hweight').value.trim(),
+      service:document.getElementById('gd-hservice').value};
+  } else if(editingGearCat==='reserve'){
+    g={...base,
+      weight:document.getElementById('gd-rweight').value.trim(),
+      repack:document.getElementById('gd-repack').value,
+      thrown:document.getElementById('gd-thrown').value,
+      sivDone:gearSivDone,waterDone:gearWaterDone};
+  }
+  if(!Array.isArray(gear[editingGearCat]))gear[editingGearCat]=[];
+  if(gearEditIdx>=0){gear[editingGearCat][gearEditIdx]=g;}
+  else{g.id=g.id||uid();gear[editingGearCat].push(g);}
+  scheduleSave();closeOverlay('gearDetailOverlay');renderGear();
+}
+
+// ===== SETTINGS =====
+function openSettings(){
+  try{
+  document.getElementById('set-startNum').value=settings.startNum;
+  document.getElementById('set-altUnit').value=settings.altUnit;
+  document.getElementById('set-windUnit').value=settings.windUnit;
+  document.getElementById('set-distUnit').value=settings.distUnit||'km';
+  document.getElementById('set-defaultWing').value=settings.defaultWing||'';
+  applyTheme(settings.theme||'dark');
+  renderPilotSettings();renderConditionSettings();updateStats();
+  document.getElementById('settingsOverlay').classList.add('open');
+  }catch(err){console.error('openSettings error:',err);}
+}
+function saveSettings(){
+  settings.startNum=parseInt(document.getElementById('set-startNum').value)||0;
+  settings.altUnit=document.getElementById('set-altUnit').value;
+  settings.windUnit=document.getElementById('set-windUnit').value;
+  settings.distUnit=document.getElementById('set-distUnit').value;
+  settings.defaultWing=document.getElementById('set-defaultWing').value.trim();
+  scheduleSave();updateStats();updateUnitLabels();
+}
+
+// ===== EXPORT / IMPORT =====
+function exportExcel(){
+  const headers=['Flight #','Date','Time','Site','Launch','Launch Type','Duration','Max Altitude','Alt Unit','Distance','Dist Unit','Wind Speed','Wind Gust','Wind Unit','Wind Dir','Conditions','Wing','Flying With','Flight Types','Launch Rating','Flight Rating','Landing Rating','Notes'];
+  const rows=flights.sort((a,b)=>(a.num||0)-(b.num||0)).map(f=>[
+    f.num||'',f.date||'',f.time||'',f.site||'',f.launchName||'',f.launchType||'',
+    fmtDur(f.durH,f.durM),f.alt||'',f.altUnit||'m',f.dist||'',f.distUnit||'km',
+    f.windSpeed||'',f.windGust||'',f.windUnit||'',f.windDir||'',
+    (f.conditions||[]).join('; '),(f.wing||''),
+    (f.flyingWith||[]).join('; '),(f.flightTypes||[]).join('; '),
+    f.launchRating||'',f.flightRating||'',f.landingRating||'',
+    (f.notes||'').replace(/"/g,'""')
+  ]);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='uplift-logbook-'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
+}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(getLogbookData(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='uplift-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const text=e.target.result.replace(/^\uFEFF/,'').trim();
+      let d;try{d=JSON.parse(text);}catch(pe){alert('Could not parse that file.\n'+pe.message);input.value='';return;}
+      const iF=d.flights||[],iN=d.notes||[],iSD=d.siteData||{};
+      if(!Object.keys(iSD).length&&iF.length){iF.forEach(f=>{if(f.site){if(!iSD[f.site])iSD[f.site]=[];if(f.launchName&&!iSD[f.site].includes(f.launchName))iSD[f.site].push(f.launchName);}});}
+      if(!confirm(`Import ${iF.length} flights and ${iN.length} notes? This will replace your current data.`)){input.value='';return;}
+      applyLogbookData({...d,siteData:iSD});
+      scheduleSave();renderFlights();updateStats();closeOverlay('settingsOverlay');
+      alert('✓ Imported '+flights.length+' flights successfully!');
+    }catch(err){alert('Something went wrong: '+err.message);}
+    input.value='';
+  };
+  reader.onerror=()=>{alert('Could not read the file.');input.value='';};
+  reader.readAsText(file);
+}
+
+// ===== IMAGE VIEWER =====
+function viewImg(src){document.getElementById('imgViewerImg').src=src;document.getElementById('imgViewer').classList.add('open');}
+
+// ===== STARS CANVAS =====
+function drawStars(){
+  const c=document.getElementById('stars');const ctx=c.getContext('2d');
+  c.width=window.innerWidth;c.height=window.innerHeight;ctx.clearRect(0,0,c.width,c.height);
+  for(let i=0;i<120;i++){const x=Math.random()*c.width,y=Math.random()*c.height*0.6;const r=Math.random()*0.9+0.2,a=Math.random()*0.6+0.1;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill();}
+}
+
+// ===== OFFLINE DETECT =====
+window.addEventListener('online',()=>{
+  if(accessToken){showSync('Back online — syncing…','syncing',0);syncFromDrive();}
+  else{showSync('Back online','synced');}
+});
+window.addEventListener('offline',()=>{showSync('Working offline','offline');});
+
+// ===== DURATION NUMPAD =====
+let npDigits=[];// stores up to 4 digits like a timer app
+
+function npUpdateDisplay(){
+  // digits flow right to left: [h2,h1,m2,m1] padded left with zeros
+  const d=[0,0,0,0,...npDigits].slice(-4);
+  const h=d[0]*10+d[1];const m=d[2]*10+d[3];
+  const hEl=document.getElementById('durH');const mEl=document.getElementById('durM');
+  if(hEl)hEl.textContent=h;
+  if(mEl)mEl.textContent=String(m).padStart(2,'0');
+  document.getElementById('f-dur').value=durToStr(h,m);
+}
+
+function npPress(digit){
+  if(npDigits.length>=4)return;// max 4 digits
+  // Prevent impossible times: first digit of minutes can't make >59
+  const next=[...npDigits,digit];
+  if(next.length===3&&next[2]>5)return;// minutes tens can't be >5
+  npDigits.push(digit);
+  npUpdateDisplay();
+}
+
+function npDelete(){
+  npDigits.pop();
+  npUpdateDisplay();
+}
+
+function npReset(){npDigits=[];npUpdateDisplay();}
+
+function setNpFromHM(h,m){
+  npDigits=[];
+  const str=String(h).padStart(2,'0')+String(m).padStart(2,'0');
+  // Remove leading zeros
+  let started=false;
+  for(const ch of str){const d=parseInt(ch);if(d>0)started=true;if(started)npDigits.push(d);}
+  npUpdateDisplay();
+}
+
+function initDials(){npUpdateDisplay();}// kept for compat
+function updateDials(){npUpdateDisplay();}
+
+// ===== SWIPE BETWEEN TABS =====
+const TABS=['log','stats','notes','gear'];
+let swipeStartX=0,swipeStartY=0;
+function getTabIdx(){return TABS.indexOf(currentTab);}
+function swipeToTab(dir){
+  const idx=getTabIdx();
+  const next=((idx+dir)+TABS.length)%TABS.length;
+  const btn=document.querySelectorAll('.nav-btn')[next];
+  if(btn)showTab(TABS[next],btn);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const content=document.getElementById('content');
+  if(content){
+    content.addEventListener('touchstart',e=>{swipeStartX=e.touches[0].clientX;swipeStartY=e.touches[0].clientY;},{passive:true});
+    content.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-swipeStartX;
+      const dy=e.changedTouches[0].clientY-swipeStartY;
+      if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){
+        swipeToTab(dx<0?1:-1);
+      }
+    },{passive:true});
+  }
+});
+
+// ===== INIT =====
+localLoad();drawStars();window.addEventListener('resize',drawStars);
+
+// Offline-first: if we have previous flights/data, show app immediately
+// User can sync later when online
+if(flights.length>0||notes.length>0||Object.values(gear).some(a=>a.length>0)){
+  if(userInfo){
+    // Restore user pill from saved info
+    document.getElementById('userAvatar').src=userInfo.picture||'';
+    document.getElementById('userPillName').textContent=userInfo.given_name||userInfo.name||'Pilot';
+    document.getElementById('userMenuName').textContent=userInfo.name||'';
+    document.getElementById('userPill').style.display='flex';
+  } else {
+    document.getElementById('offlineSettingsBtn').style.display='flex';
+  }
+  showApp();
+  // Try to get fresh token silently in background (won't show popup)
+  if(typeof google!=='undefined'&&google.accounts){
+    try{
+      google.accounts.id.initialize({client_id:CLIENT_ID,callback:()=>{}});
+    }catch(e){}
+  }
+}
+
+// Robust event listeners - avoid onclick attribute issues in Safari/Android
+document.addEventListener('DOMContentLoaded',()=>{},false);
+(function attachListeners(){
+  const saveBtn=document.getElementById('saveFlightBtn');
+  if(saveBtn){saveBtn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveFlight();},false);}
+  const settingsBtn=document.getElementById('settingsIconBtn');
+  if(settingsBtn){settingsBtn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openSettings();},false);}
+  const deleteBtn=document.getElementById('deleteFlightBtn');
+  if(deleteBtn){deleteBtn.addEventListener('click',function(e){e.preventDefault();deleteFlight();},false);}
+  npUpdateDisplay();
+  // Wire gear photo input safely
+  const gpi=document.getElementById('gearPhotoInput');
+  if(gpi){gpi.addEventListener('change',function(){addGearPhotos(this);},false);}
+  // Wire note photo input
+  const npi=document.getElementById('notePhotoInput');
+  if(npi){npi.addEventListener('change',function(){addNotePhotos(this);},false);}
+})();
+</script>
+</body>
+</html>
