@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uplift — User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060d1a;--bg2:#0c1828;--surface:rgba(255,255,255,0.05);--surface2:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.1);--text:#e8f0ff;--text2:#8aa0c0;--text3:#5a7098;
+  --gold:#f2a92e;--gold2:#d4891a;--blue:#4a90e2;--green:#3ecf8e;--red:#e05555;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.6}
+
+/* Ambient */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 40% at 50% -10%,#1a3d7a 0%,transparent 60%);}
+
+/* Layout */
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px 80px}
+
+/* Hero */
+.hero{text-align:center;padding:80px 20px 60px;}
+.hero-logo{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:24px}
+.hero-wordmark{font-family:'Syne',sans-serif;font-weight:800;font-size:52px;letter-spacing:-2px}
+.hero-wordmark em{color:var(--gold);font-style:normal}
+.hero-sub{font-size:20px;color:var(--text2);margin-bottom:8px}
+.hero-version{font-size:13px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase}
+.hero-divider{width:60px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;margin:32px auto}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:60px}
+.toc-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.toc-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:10px;text-decoration:none;color:var(--text2);font-size:14px;transition:all 0.15s}
+.toc-item:hover{background:rgba(242,169,46,0.1);color:var(--gold)}
+.toc-num{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--gold);width:20px;flex-shrink:0}
+
+/* Sections */
+.section{margin-bottom:72px}
+.section-header{display:flex;align-items:center;gap:16px;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.section-num{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:var(--gold);background:rgba(242,169,46,0.12);border:1px solid rgba(242,169,46,0.25);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-title{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;letter-spacing:-0.5px}
+
+/* Screen + callouts layout */
+.screen-layout{display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start}
+.screen-layout.right{grid-template-columns:1fr 220px}
+.screen-wrap{position:relative;flex-shrink:0}
+.screen-img{width:220px;border-radius:24px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,0.5);display:block}
+.callout-badge{position:absolute;width:26px;height:26px;background:var(--gold);color:#040a10;border-radius:50%;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(242,169,46,0.5);z-index:2}
+
+/* Callout list */
+.callouts{display:flex;flex-direction:column;gap:12px}
+.callout{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.callout-num{width:26px;height:26px;background:var(--gold);color:#040a10;border-radius:50%;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.callout-body{flex:1}
+.callout-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text);margin-bottom:3px}
+.callout-desc{font-size:13px;color:var(--text2);line-height:1.5}
+.callout-desc strong{color:var(--text);font-weight:600}
+
+/* Tips */
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:8px}
+.tip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.tip-icon{font-size:24px;margin-bottom:8px}
+.tip-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px}
+.tip-desc{font-size:13px;color:var(--text2);line-height:1.5}
+
+/* Full-width screenshot */
+.full-screen-wrap{display:flex;justify-content:center;margin-bottom:24px}
+
+/* Highlight box */
+.highlight{background:rgba(242,169,46,0.08);border:1px solid rgba(242,169,46,0.2);border-radius:12px;padding:16px 20px;margin:16px 0;font-size:14px;color:var(--text2);line-height:1.6}
+.highlight strong{color:var(--gold)}
+
+/* Two screenshots side by side */
+.two-screens{display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.two-screens .screen-img{width:200px}
+
+/* Footer */
+.footer{text-align:center;padding:40px 20px;border-top:1px solid var(--border);color:var(--text3);font-size:13px;margin-top:40px}
+.footer strong{color:var(--gold)}
+
+@media print{
+  body{background:#fff;color:#1a1a2e}
+  .ambient{display:none}
+  .toc-item{background:#f5f5f5;color:#333}
+  .callout{background:#f9f9f9;border-color:#ddd}
+  .tip{background:#f9f9f9;border-color:#ddd}
+  .highlight{background:#fffbf0;border-color:#d4891a}
+}
+
+@media(max-width:600px){
+  .screen-layout,.screen-layout.right{grid-template-columns:1fr}
+  .screen-img{width:180px;margin:0 auto;display:block}
+  .two-screens .screen-img{width:150px}
+  .hero-wordmark{font-size:38px}
+}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-logo">
+    <svg width="56" height="56" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" rx="90" fill="#060d1a"/>
+      <path d="M100 260 Q256 118 412 260 Q256 148 100 260Z" fill="#c47800" opacity="0.3"/>
+      <path d="M100 260 Q128 189 160 248 Q130 240 100 260Z" fill="#d4891a" opacity="0.6"/>
+      <path d="M160 248 Q188 168 205 238 Q182 230 160 248Z" fill="#e09920" opacity="0.6"/>
+      <path d="M205 238 Q228 152 256 232 Q230 226 205 238Z" fill="#f2a92e" opacity="0.7"/>
+      <path d="M256 232 Q284 152 307 238 Q282 226 256 232Z" fill="#f2a92e" opacity="0.7"/>
+      <path d="M307 238 Q324 168 352 248 Q330 230 307 238Z" fill="#e09920" opacity="0.6"/>
+      <path d="M352 248 Q384 189 412 260 Q382 240 352 248Z" fill="#d4891a" opacity="0.6"/>
+      <path d="M100 260 Q256 118 412 260" fill="none" stroke="#f2a92e" stroke-width="4" stroke-linecap="round"/>
+      <path d="M108 268 Q256 148 404 268" fill="none" stroke="#d4891a" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="256" y1="370" x2="148" y2="260" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="192" y2="250" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="224" y2="244" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="256" y2="242" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="288" y2="244" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="320" y2="250" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="364" y2="260" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <rect x="238" y="366" width="36" height="26" rx="6" fill="#f2a92e" opacity="0.9"/>
+      <ellipse cx="256" cy="358" rx="14" ry="16" fill="#d4891a" opacity="0.9"/>
+      <circle cx="256" cy="338" r="13" fill="#f2a92e"/>
+      <path d="M244 334 Q256 324 268 334" fill="none" stroke="#d4891a" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+    </svg>
+    <div class="hero-wordmark">Up<em>lift</em></div>
+  </div>
+  <div class="hero-sub">Paragliding Logbook</div>
+  <div class="hero-sub">User Guide</div>
+  <div class="hero-version">Beta · chnevill.github.io/UpLift</div>
+  <div class="hero-divider"></div>
+  <p style="max-width:560px;margin:0 auto;color:var(--text2);font-size:15px;line-height:1.7">
+    Uplift is your paragliding logbook that lives on your phone. Your data is stored in your own Google Drive — Uplift never stores anything on its own servers. It works offline and syncs automatically when you reconnect.
+  </p>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a href="#s1" class="toc-item"><span class="toc-num">1</span>Getting Started</a>
+    <a href="#s2" class="toc-item"><span class="toc-num">2</span>The Dashboard</a>
+    <a href="#s3" class="toc-item"><span class="toc-num">3</span>Logging a Flight</a>
+    <a href="#s4" class="toc-item"><span class="toc-num">4</span>Stats</a>
+    <a href="#s5" class="toc-item"><span class="toc-num">5</span>Notes</a>
+    <a href="#s6" class="toc-item"><span class="toc-num">6</span>Gear</a>
+    <a href="#s7" class="toc-item"><span class="toc-num">7</span>Settings</a>
+    <a href="#s8" class="toc-item"><span class="toc-num">8</span>Tips &amp; Tricks</a>
+  </div>
+</div>
+
+<!-- SECTION 1: GETTING STARTED -->
+<div class="section" id="s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">Getting Started</div>
+  </div>
+  <div class="screen-layout">
+    <div class="screen-wrap">
+      <img class="screen-img" src="screenshots/01-getting-started.png" alt="Sign in screen">
+    </div>
+    <div class="callouts">
+      <div class="callout" style="background:rgba(242,169,46,0.08);border-color:rgba(242,169,46,0.25)">
+        <div class="callout-num" style="background:var(--gold)">!</div>
+        <div class="callout-body">
+          <div class="callout-title" style="color:var(--gold)">Before your first flight — check Settings</div>
+          <div class="callout-desc">Open <strong>Settings ⚙</strong> and set two things before you log anything: <strong>Starting flight number and airtime</strong> (so your logbook continues from your existing total, e.g. 200 flights, 150 hours) and <strong>Units</strong> (altitude in metres or feet, wind speed, distance). These affect how all your data is recorded.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">→</div>
+        <div class="callout-body">
+          <div class="callout-title">Sign in with Google</div>
+          <div class="callout-desc">Tap <strong>Sign in with Google</strong> to connect your Google account. Your logbook is saved to your own Google Drive as a single JSON file — nobody else can see it.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">→</div>
+        <div class="callout-body">
+          <div class="callout-title">Offline at the hill</div>
+          <div class="callout-desc"><strong>Sign in once</strong>. After that, Uplift opens straight to your logbook even with no signal. All flights you log offline will sync automatically when you get back online.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">→</div>
+        <div class="callout-body">
+          <div class="callout-title">Add to home screen</div>
+          <div class="callout-desc">In Safari tap <strong>Share → Add to Home Screen</strong>. In Chrome tap <strong>⋮ → Add to Home Screen</strong>. The app opens fullscreen.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: DASHBOARD -->
+<div class="section" id="s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">The Dashboard</div>
+  </div>
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+    <img class="screen-img" src="screenshots/02-dashboard.png" alt="Logbook dashboard" style="width:220px">
+  </div>
+  <div class="screen-layout right">
+    <div class="callouts">
+      <div class="callout">
+        <div class="callout-num">1</div>
+        <div class="callout-body">
+          <div class="callout-title">Dashboard pills</div>
+          <div class="callout-desc">Four at-a-glance stats. <strong>Fully customisable</strong> — go to Settings to choose which 4 stats you want and drag them into your preferred order. Choose from total flights, airtime, altitude, distance, ratings, duration and more. <strong>Tap a personal best pill</strong> to jump straight to that flight.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">2</div>
+        <div class="callout-body">
+          <div class="callout-title">Navigation tabs</div>
+          <div class="callout-desc">Switch between <strong>Logbook, Stats, Notes</strong> and <strong>Gear</strong>. You can also <strong>swipe left or right</strong> on the content area to move between screens.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">3</div>
+        <div class="callout-body">
+          <div class="callout-title">Settings ⚙</div>
+          <div class="callout-desc">Tap the gear icon top right to open Settings, or tap your profile picture to access sync, settings and sign out.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">4</div>
+        <div class="callout-body">
+          <div class="callout-title">Log Flight button</div>
+          <div class="callout-desc">The gold button at the bottom opens the flight logging form. Changes label to <strong>New Note</strong> on the Notes tab.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SECTION 3: LOGGING A FLIGHT -->
+<div class="section" id="s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">Logging a Flight</div>
+  </div>
+  <p style="color:var(--text2);margin-bottom:24px">Tap the gold <strong style="color:var(--gold)">+ Log Flight</strong> button to open the flight form. Everything is optional except the site name.</p>
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+  <div class="two-screens" style="margin-bottom:28px">
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">TOP OF FORM</div>
+      <img class="screen-img" src="screenshots/03-log-flight.png" alt="Log a Flight form top">
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">BOTTOM OF FORM</div>
+      <img class="screen-img" src="screenshots/03-log-flight-2.png" alt="Log a Flight form bottom">
+    </div>
+  </div>
+  </div>
+  <div class="callouts" style="margin-bottom:28px">
+    <div class="callout">
+      <div class="callout-num">🗺</div>
+      <div class="callout-body">
+        <div class="callout-title">Site & Launch — remembered automatically</div>
+        <div class="callout-desc">Once you've logged a flight at a site, it appears in the dropdown forever. Same for launch names. <strong>Type a new name to add it</strong> — it's remembered for next time.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">⏱</div>
+      <div class="callout-body">
+        <div class="callout-title">Duration numpad</div>
+        <div class="callout-desc">Type digits like a timer — <strong>1, 3, 0</strong> = 1h 30m. <strong>4, 5</strong> = 45 minutes. <strong>2, 0, 0</strong> = 2 hours. The digits flow right to left just like a stopwatch.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">🪂</div>
+      <div class="callout-body">
+        <div class="callout-title">Wing, Harness &amp; Reserve — from your gear list</div>
+        <div class="callout-desc">Dropdowns are populated from your Gear list. <strong>The top item is pre-selected automatically.</strong> If you have multiple wings, the first in your list is the default — reorder them in Gear to change the default.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">👥</div>
+      <div class="callout-body">
+        <div class="callout-title">Flying With — remembered</div>
+        <div class="callout-desc">Add pilots you flew with. Once added they appear in the dropdown for future flights. Manage your pilot list in Settings.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">☁️</div>
+      <div class="callout-body">
+        <div class="callout-title">Conditions — customisable tags</div>
+        <div class="callout-desc">Tap chips to select conditions. Add your own tags in Settings → Conditions tags. Remove ones you never use.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">🚀</div>
+      <div class="callout-body">
+        <div class="callout-title">Launch Type — remembers your preferred method</div>
+        <div class="callout-desc">Forward, Reverse, or Cobra — Uplift defaults to whichever launch type you use most often, based on your flight history. Just tap a different one if this flight was different.</div>
+      </div>
+    </div>
+  </div>
+  <div class="highlight">
+    <strong>Tip:</strong> If you log a new wing or harness name via free text in the flight form, it's automatically added to your Gear list. You can then add full specs to it later in the Gear tab.
+  </div>
+</div>
+
+<!-- SECTION 4: STATS -->
+<div class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div class="section-title">Stats</div>
+  </div>
+  <div class="screen-layout">
+    <div class="screen-wrap">
+      <img class="screen-img" src="screenshots/04-stats.png" alt="Stats screen">
+    </div>
+    <div class="callouts">
+      <div class="callout">
+        <div class="callout-num">1</div>
+        <div class="callout-body">
+          <div class="callout-title">Overview cards</div>
+          <div class="callout-desc">Six key stats: total flights (your real logbook total), total airtime, best duration, best distance, best altitude, and sites flown. <strong>Tap a best to open that flight's detail.</strong></div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">2</div>
+        <div class="callout-body">
+          <div class="callout-title">Charts — reorderable</div>
+          <div class="callout-desc">Launch type pie, flight types pie, and sites flown bar chart. Use the <strong>▲ ▼ arrows</strong> on the left of each chart box to reorder them.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: NOTES -->
+<div class="section" id="s5">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div class="section-title">Notes</div>
+  </div>
+  <div class="two-screens" style="margin-bottom:28px">
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Notes list</p>
+      <img class="screen-img" src="screenshots/05-notes-list.png" alt="Notes list">
+    </div>
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Note full view</p>
+      <img class="screen-img" src="screenshots/05-notes-full.png" alt="Note view">
+    </div>
+  </div>
+  <div class="callouts">
+    <div class="callout">
+      <div class="callout-num">1</div>
+      <div class="callout-body">
+        <div class="callout-title">Tap a note to read it</div>
+        <div class="callout-desc">Tapping a note card opens the full-screen read view. Tap <strong>Edit Note</strong> at the bottom to make changes.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">2</div>
+      <div class="callout-body">
+        <div class="callout-title">Swipe between notes</div>
+        <div class="callout-desc">In the full note view, <strong>swipe left or right</strong> to move between notes. The counter (e.g. "1 of 5") shows your position. Use ‹ › buttons too.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">3</div>
+      <div class="callout-body">
+        <div class="callout-title">Links are tappable</div>
+        <div class="callout-desc">Any URL you type in a note body becomes a tappable link in the read view. Great for site guides, weather links, airspace maps.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">4</div>
+      <div class="callout-body">
+        <div class="callout-title">Photos</div>
+        <div class="callout-desc">Attach photos to any note. Thumbnails appear in the note card and full-size in the read view. Pinch to zoom on any photo.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">5</div>
+      <div class="callout-body">
+        <div class="callout-title">Reorder with ▲ ▼</div>
+        <div class="callout-desc">Use the arrows on the left of each note card to move it up or down. Put your most important notes at the top.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: GEAR -->
+<div class="section" id="s6">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <div class="section-title">Gear</div>
+  </div>
+  <div class="two-screens" style="margin-bottom:28px">
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Gear list</p>
+      <img class="screen-img" src="screenshots/06-gear-list.png" alt="Gear list">
+    </div>
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Reserve detail</p>
+      <img class="screen-img" src="screenshots/06-gear-reserve.png" alt="Reserve detail">
+    </div>
+  </div>
+  <div class="callouts">
+    <div class="callout">
+      <div class="callout-num">1</div>
+      <div class="callout-body">
+        <div class="callout-title">Three categories</div>
+        <div class="callout-desc"><strong>Wing 🪂, Harness 🦺, Reserve 🛟</strong> — each can hold multiple items. Tap <strong>+</strong> to add. You can have a comp wing, a training wing and a mini wing all listed.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">2</div>
+      <div class="callout-body">
+        <div class="callout-title">Top item = default in Log Flight</div>
+        <div class="callout-desc">When logging a flight, the <strong>first item in each gear category is pre-selected.</strong> Use ▲ ▼ to reorder — put your main wing at the top.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">3</div>
+      <div class="callout-body">
+        <div class="callout-title">Tap an item for overview</div>
+        <div class="callout-desc">Tap any gear item to see a full overview — all specs, airtime from logbook (for wings), repack status (for reserves). Swipe left/right to browse all your gear.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">4</div>
+      <div class="callout-body">
+        <div class="callout-title">Reserve repack alert</div>
+        <div class="callout-desc">If your reserve hasn't been repacked in <strong>6 months</strong>, a red warning appears on the gear card and in the overview. Repack date is tracked per reserve.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">5</div>
+      <div class="callout-body">
+        <div class="callout-title">Wing airtime</div>
+        <div class="callout-desc">For each wing, Uplift <strong>calculates total flights and airtime automatically</strong> from your logbook. No manual entry needed — it updates every time you log a flight.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">6</div>
+      <div class="callout-body">
+        <div class="callout-title">URL links</div>
+        <div class="callout-desc">Add a link to each gear item — manufacturer page, spec sheet, inspection report. Tap the 🔗 icon on the gear list to open it directly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7: SETTINGS -->
+<div class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <div class="section-title">Settings</div>
+  </div>
+  
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+  <div class="two-screens" style="margin-bottom:28px">
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">TOP OF SETTINGS</div>
+      <img class="screen-img" src="screenshots/07-settings.png" alt="Settings top">
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">BOTTOM OF SETTINGS</div>
+      <img class="screen-img" src="screenshots/07-settings-2.png" alt="Settings bottom">
+    </div>
+  </div>
+  </div>
+  <div class="callouts">
+      <div class="callout">
+        <div class="callout-num">1</div>
+        <div class="callout-body">
+          <div class="callout-title">Theme</div>
+          <div class="callout-desc">Choose <strong>Dark</strong> (default), <strong>Light</strong>, or <strong>High Visibility</strong> — larger text, pure black background, bright yellow accents. Perfect for reading without glasses at the hill.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">2</div>
+        <div class="callout-body">
+          <div class="callout-title">Text size</div>
+          <div class="callout-desc">Drag the slider from 80% to 150% to scale all text in the app up or down. Handy if High Visibility theme alone isn't quite enough, or if you just prefer things a bit smaller.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">3</div>
+        <div class="callout-body">
+          <div class="callout-title">Dashboard pills</div>
+          <div class="callout-desc">Choose your 4 dashboard stats and arrange them with <strong>◀ ▶</strong> arrows. Tap a stat to add it, tap ✕ to remove.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">4</div>
+        <div class="callout-body">
+          <div class="callout-title">Conditions tags</div>
+          <div class="callout-desc">Add, remove and customise the condition chips shown when logging a flight. Make them relevant to your local flying.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">5</div>
+        <div class="callout-body">
+          <div class="callout-title">Pilots list</div>
+          <div class="callout-desc">Pre-add your regular flying buddies so they appear in the "Flying With" dropdown when logging flights.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">6</div>
+        <div class="callout-body">
+          <div class="callout-title">Export Flight Log (PDF)</div>
+          <div class="callout-desc">Generates a <strong>print-ready PDF logbook</strong> — cover page with your stats, full flight table with all fields, signature lines for instructor sign-off. Perfect for licence progression.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">7</div>
+        <div class="callout-body">
+          <div class="callout-title">Export / Import backup (JSON)</div>
+          <div class="callout-desc"><strong>Export regularly</strong> to keep a backup. The JSON file contains everything — all flights, notes, gear, photos and settings. Import it to restore on any device.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">8</div>
+        <div class="callout-body">
+          <div class="callout-title">Sync on WiFi only (Android only)</div>
+          <div class="callout-desc">Turn this on to pause syncing whenever you're on cellular data — useful if you're on a limited data plan or flying somewhere with weak signal. Your flights still save locally and sync automatically once you're back on WiFi.</div>
+        </div>
+      </div>
+  </div>
+
+</div>
+
+<!-- SECTION 8: TIPS -->
+<div class="section" id="s8">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <div class="section-title">Tips &amp; Tricks</div>
+  </div>
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="tip-icon">📵</div>
+      <div class="tip-title">Flying somewhere remote?</div>
+      <div class="tip-desc">Sign in once online. Uplift works fully offline — log flights normally with no signal. Everything syncs automatically on the drive home.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">💾</div>
+      <div class="tip-title">Back up regularly</div>
+      <div class="tip-desc">Go to Settings → Export backup (JSON) and save the file somewhere safe. Do this before any big updates.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🔍</div>
+      <div class="tip-title">Powerful search</div>
+      <div class="tip-desc">The search bar on the Logbook tab searches across site, launch, wing, notes, pilots, conditions and flight types all at once. Tap the ☆ next to the search bar to show only your favourite flights.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">📲</div>
+      <div class="tip-title">Install to home screen</div>
+      <div class="tip-desc">Add Uplift to your home screen for a full screen experience. No browser bar, works offline, loads instantly.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🔆</div>
+      <div class="tip-title">Can't read in bright sun?</div>
+      <div class="tip-desc">Switch to High Visibility mode in Settings for maximum contrast and larger text. No glasses needed.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">📖</div>
+      <div class="tip-title">Quick access to this guide</div>
+      <div class="tip-desc">Tap the Uplift logo at the top of the app any time to jump straight back to this user guide.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🛟</div>
+      <div class="tip-title">Reserve repack reminder</div>
+      <div class="tip-desc">Add your reserve repack date in the Gear tab. Uplift will warn you when it's been over 6 months — never fly with an overdue reserve.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">📄</div>
+      <div class="tip-title">Going for your P3?</div>
+      <div class="tip-desc">Use Settings → Export Flight Log (PDF) to generate a professional logbook with a signature line, ready to hand to your examiner.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🤏</div>
+      <div class="tip-title">Pinch to zoom photos</div>
+      <div class="tip-desc">Tap any photo in a flight, note or gear item to open the full-screen viewer. Pinch to zoom, then drag to pan around the image.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p><strong>Uplift</strong> · Paragliding Flight Logbook · Beta</p>
+  <p style="margin-top:6px">Open at <strong>chnevill.github.io/UpLift</strong> · Works on iPhone, Android &amp; PC</p>
+  <p style="margin-top:6px">Your data lives in your own Google Drive. Always export a JSON backup regularly.</p>
+</div>
+
+</div>
+</body>
+</html>
