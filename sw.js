@@ -1,4 +1,4 @@
-const CACHE='uplift-v372';
+const CACHE='uplift-v374';
 const URLS=[
   '/UpLift/',
   '/UpLift/index.html'
