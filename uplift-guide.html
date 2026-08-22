@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeeSide — User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060d1a;--bg2:#0c1828;--surface:rgba(255,255,255,0.05);--surface2:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.1);--text:#e8f0ff;--text2:#8aa0c0;--text3:#5a7098;
+  --gold:#f2a92e;--gold2:#d4891a;--blue:#4a90e2;--green:#3ecf8e;--red:#e05555;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.6}
+
+/* Ambient */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 40% at 50% -10%,#1a3d7a 0%,transparent 60%);}
+
+/* Layout */
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px 80px}
+
+/* Hero */
+.hero{text-align:center;padding:80px 20px 60px;}
+.hero-logo{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:24px}
+.hero-wordmark{font-family:'Syne',sans-serif;font-weight:800;font-size:52px;letter-spacing:-2px}
+.hero-wordmark em{color:var(--gold);font-style:normal}
+.hero-sub{font-size:20px;color:var(--text2);margin-bottom:8px}
+.hero-version{font-size:13px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase}
+.hero-divider{width:60px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;margin:32px auto}
+
+/* Search */
+.guide-search-wrap{position:relative;max-width:480px;margin:0 auto 40px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;transition:border-color 0.15s}
+.guide-search-wrap:focus-within{border-color:rgba(242,169,46,0.4)}
+.guide-search-icon{opacity:0.6;flex-shrink:0}
+.guide-search-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-width:0}
+.guide-search-wrap input::placeholder{color:var(--text3)}
+.guide-search-wrap button{background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;padding:2px 4px;flex-shrink:0}
+.guide-search-wrap button:hover{color:var(--text)}
+#guideSearchNoResults{display:none;text-align:center;color:var(--text3);font-size:15px;padding:40px 20px}
+#guideSearchCount{display:none;text-align:center;color:var(--text3);font-size:13px;margin:-24px 0 32px}
+mark{background:rgba(242,169,46,0.35);color:var(--text);border-radius:3px;padding:0 2px}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:60px}
+.toc-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.toc-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:10px;text-decoration:none;color:var(--text2);font-size:14px;transition:all 0.15s}
+.toc-item:hover{background:rgba(242,169,46,0.1);color:var(--gold)}
+.toc-num{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--gold);width:20px;flex-shrink:0}
+
+/* Sections */
+.section{margin-bottom:72px}
+.section-header{display:flex;align-items:center;gap:16px;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.section-num{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:var(--gold);background:rgba(242,169,46,0.12);border:1px solid rgba(242,169,46,0.25);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-title{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;letter-spacing:-0.5px}
+
+/* Screen + callouts layout */
+.screen-layout{display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start}
+.screen-layout.right{grid-template-columns:1fr 220px}
+.screen-wrap{position:relative;flex-shrink:0}
+.screen-img{width:220px;border-radius:24px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,0.5);display:block}
+.callout-badge{position:absolute;width:26px;height:26px;background:var(--gold);color:#040a10;border-radius:50%;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(242,169,46,0.5);z-index:2}
+
+/* Callout list */
+.callouts{display:flex;flex-direction:column;gap:12px}
+.callout{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.callout-num{width:26px;height:26px;background:var(--gold);color:#040a10;border-radius:50%;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.callout-body{flex:1}
+.callout-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text);margin-bottom:3px}
+.callout-desc{font-size:13px;color:var(--text2);line-height:1.5}
+.callout-desc strong{color:var(--text);font-weight:600}
+
+/* Tips */
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:8px}
+.tip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.tip-icon{font-size:24px;margin-bottom:8px}
+.tip-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px}
+.tip-desc{font-size:13px;color:var(--text2);line-height:1.5}
+
+/* Full-width screenshot */
+.full-screen-wrap{display:flex;justify-content:center;margin-bottom:24px}
+
+/* Highlight box */
+.highlight{background:rgba(242,169,46,0.08);border:1px solid rgba(242,169,46,0.2);border-radius:12px;padding:16px 20px;margin:16px 0;font-size:14px;color:var(--text2);line-height:1.6}
+.highlight strong{color:var(--gold)}
+
+/* Two screenshots side by side */
+.two-screens{display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.two-screens .screen-img{width:200px}
+
+/* Footer */
+.footer{text-align:center;padding:40px 20px;border-top:1px solid var(--border);color:var(--text3);font-size:13px;margin-top:40px}
+.footer strong{color:var(--gold)}
+
+@media print{
+  body{background:#fff;color:#1a1a2e}
+  .ambient{display:none}
+  .toc-item{background:#f5f5f5;color:#333}
+  .callout{background:#f9f9f9;border-color:#ddd}
+  .tip{background:#f9f9f9;border-color:#ddd}
+  .highlight{background:#fffbf0;border-color:#d4891a}
+}
+
+@media(max-width:600px){
+  .screen-layout,.screen-layout.right{grid-template-columns:1fr}
+  .screen-img{width:180px;margin:0 auto;display:block}
+  .two-screens .screen-img{width:150px}
+  .hero-wordmark{font-size:38px}
+}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-logo">
+    <svg width="56" height="56" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" rx="90" fill="#060d1a"/>
+      <path d="M100 260 Q256 118 412 260 Q256 148 100 260Z" fill="#c47800" opacity="0.3"/>
+      <path d="M100 260 Q128 189 160 248 Q130 240 100 260Z" fill="#d4891a" opacity="0.6"/>
+      <path d="M160 248 Q188 168 205 238 Q182 230 160 248Z" fill="#e09920" opacity="0.6"/>
+      <path d="M205 238 Q228 152 256 232 Q230 226 205 238Z" fill="#f2a92e" opacity="0.7"/>
+      <path d="M256 232 Q284 152 307 238 Q282 226 256 232Z" fill="#f2a92e" opacity="0.7"/>
+      <path d="M307 238 Q324 168 352 248 Q330 230 307 238Z" fill="#e09920" opacity="0.6"/>
+      <path d="M352 248 Q384 189 412 260 Q382 240 352 248Z" fill="#d4891a" opacity="0.6"/>
+      <path d="M100 260 Q256 118 412 260" fill="none" stroke="#f2a92e" stroke-width="4" stroke-linecap="round"/>
+      <path d="M108 268 Q256 148 404 268" fill="none" stroke="#d4891a" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="256" y1="370" x2="148" y2="260" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="192" y2="250" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="224" y2="244" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="256" y2="242" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="288" y2="244" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="320" y2="250" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <line x1="256" y1="370" x2="364" y2="260" stroke="#f2a92e" stroke-width="1.2" opacity="0.5"/>
+      <rect x="238" y="366" width="36" height="26" rx="6" fill="#f2a92e" opacity="0.9"/>
+      <ellipse cx="256" cy="358" rx="14" ry="16" fill="#d4891a" opacity="0.9"/>
+      <circle cx="256" cy="338" r="13" fill="#f2a92e"/>
+      <path d="M244 334 Q256 324 268 334" fill="none" stroke="#d4891a" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+    </svg>
+    <div class="hero-wordmark">Lee<em>Side</em></div>
+  </div>
+  <div class="hero-sub">Paragliding Logbook</div>
+  <div class="hero-sub">User Guide</div>
+  <div class="hero-version">Beta · chnevill.github.io/UpLift</div>
+  <div class="hero-divider"></div>
+  <p style="max-width:560px;margin:0 auto;color:var(--text2);font-size:15px;line-height:1.7">
+    LeeSide is your paragliding logbook that lives on your phone. Your data is stored in your own Google Drive — LeeSide never stores anything on its own servers. It works offline and syncs automatically when you reconnect.
+  </p>
+</div>
+
+<!-- SEARCH -->
+<div class="guide-search-wrap">
+  <span class="guide-search-icon">🔍</span>
+  <input type="text" id="guideSearch" placeholder="Search the guide…" autocomplete="off">
+  <button id="guideSearchClear" style="display:none" aria-label="Clear search">✕</button>
+</div>
+<div id="guideSearchCount"></div>
+<div id="guideSearchNoResults">No results — try a different word</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a href="#s1" class="toc-item"><span class="toc-num">1</span>Getting Started</a>
+    <a href="#s2" class="toc-item"><span class="toc-num">2</span>The Dashboard</a>
+    <a href="#s3" class="toc-item"><span class="toc-num">3</span>Logging a Flight</a>
+    <a href="#s4" class="toc-item"><span class="toc-num">4</span>Sites</a>
+    <a href="#s5" class="toc-item"><span class="toc-num">5</span>Notes</a>
+    <a href="#s6" class="toc-item"><span class="toc-num">6</span>Gear</a>
+    <a href="#s7" class="toc-item"><span class="toc-num">7</span>Stats</a>
+    <a href="#s8" class="toc-item"><span class="toc-num">8</span>Settings</a>
+    <a href="#s9" class="toc-item"><span class="toc-num">9</span>Tips &amp; Tricks</a>
+  </div>
+</div>
+
+<!-- SECTION 1: GETTING STARTED -->
+<div class="section" id="s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">Getting Started</div>
+  </div>
+  <div class="screen-layout">
+    <div class="screen-wrap">
+      <img class="screen-img" src="screenshots/01-getting-started.png" alt="Sign in screen">
+    </div>
+    <div class="callouts">
+      <div class="callout" style="background:rgba(242,169,46,0.08);border-color:rgba(242,169,46,0.25)">
+        <div class="callout-num" style="background:var(--gold)">!</div>
+        <div class="callout-body">
+          <div class="callout-title" style="color:var(--gold)">Before your first flight — check Settings</div>
+          <div class="callout-desc">Open <strong>Settings ⚙</strong> and set two things before you log anything: <strong>Starting flight number and airtime</strong> (so your logbook continues from your existing total, e.g. 200 flights, 150 hours) and <strong>Units</strong> (altitude in metres or feet, wind speed, distance). These affect how all your data is recorded.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">→</div>
+        <div class="callout-body">
+          <div class="callout-title">Sign in with Google</div>
+          <div class="callout-desc">Tap <strong>Sign in with Google</strong> to connect your Google account. Your logbook is saved to your own Google Drive as a single JSON file — nobody else can see it.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">→</div>
+        <div class="callout-body">
+          <div class="callout-title">Offline at the hill</div>
+          <div class="callout-desc"><strong>Sign in once</strong>. After that, LeeSide opens straight to your logbook even with no signal. All flights you log offline will sync automatically when you get back online.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">→</div>
+        <div class="callout-body">
+          <div class="callout-title">Add to home screen</div>
+          <div class="callout-desc">In Safari tap <strong>Share → Add to Home Screen</strong>. In Chrome tap <strong>⋮ → Add to Home Screen</strong>. The app opens fullscreen.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: DASHBOARD -->
+<div class="section" id="s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">The Dashboard</div>
+  </div>
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+    <img class="screen-img" src="screenshots/02-dashboard.png" alt="Logbook dashboard" style="width:220px">
+  </div>
+  <div class="screen-layout right">
+    <div class="callouts">
+      <div class="callout">
+        <div class="callout-num">1</div>
+        <div class="callout-body">
+          <div class="callout-title">Dashboard pills</div>
+          <div class="callout-desc">Four at-a-glance stats. <strong>Fully customisable</strong> — go to Settings to choose which 4 stats you want and drag them into your preferred order. Choose from total flights, airtime, altitude, distance, ratings, duration and more. <strong>Tap a personal best pill</strong> to jump straight to that flight.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">2</div>
+        <div class="callout-body">
+          <div class="callout-title">Navigation tabs</div>
+          <div class="callout-desc">Switch between <strong>Logbook, Sites, Notes</strong> and <strong>Gear</strong>. You can also <strong>swipe left or right</strong> on the content area to move between them. Look for the small <strong>📊 chart icon</strong> next to the search bar on Logbook — that opens Stats.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">3</div>
+        <div class="callout-body">
+          <div class="callout-title">Settings ⚙</div>
+          <div class="callout-desc">Tap the gear icon top right to open Settings, or tap your profile picture to access sync, settings and sign out.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">4</div>
+        <div class="callout-body">
+          <div class="callout-title">Log Flight button</div>
+          <div class="callout-desc">The <strong>Log Flight</strong> button at the bottom opens the flight logging form. Changes label to <strong>New Note</strong> on the Notes tab.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SECTION 3: LOGGING A FLIGHT -->
+<div class="section" id="s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">Logging a Flight</div>
+  </div>
+  <p style="color:var(--text2);margin-bottom:24px">Tap the gold <strong style="color:var(--gold)">+ Log Flight</strong> button to open the flight form. Everything is optional except the site name.</p>
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+  <div class="two-screens" style="margin-bottom:28px">
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">TOP OF FORM</div>
+      <img class="screen-img" src="screenshots/03-log-flight.png" alt="Log a Flight form top">
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">BOTTOM OF FORM</div>
+      <img class="screen-img" src="screenshots/03-log-flight-2.png" alt="Log a Flight form bottom">
+    </div>
+  </div>
+  </div>
+  <div class="callouts" style="margin-bottom:28px">
+    <div class="callout">
+      <div class="callout-num">🗺</div>
+      <div class="callout-body">
+        <div class="callout-title">Site & Launch — sorted by distance</div>
+        <div class="callout-desc">Sites are listed nearest-first based on your current location. <strong>If you're within about 2 miles of a saved site, it's pre-filled automatically</strong> — handy when you're logging right after landing. Type a new name to add a site or launch — it's remembered for next time.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">📍</div>
+      <div class="callout-body">
+        <div class="callout-title">Flying XC or vol-biv? Use a one time location</div>
+        <div class="callout-desc">Launched somewhere remote that's not worth saving as a permanent site — a one-off spot you'll likely never fly again? Choose <strong>📍 Use a one time location</strong> at the top of the site list instead. Your current GPS coordinates fill in automatically as the launch, and a small map icon lets you fine-tune the spot or drop a pin manually — tapping it while offline just tells you the map needs a connection, everything else about this still works with zero signal. Nothing is added to your Sites list. Wind still auto-fills the same way it does everywhere else, and if a country can be determined for the spot, it's shown right on the flight card and becomes searchable too. Changed your mind, or this turned out to be a site you'll return to? Just pick a real site from the list instead before saving.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">⏱</div>
+      <div class="callout-body">
+        <div class="callout-title">Duration numpad</div>
+        <div class="callout-desc">Type digits like a timer — <strong>1, 3, 0</strong> = 1h 30m. <strong>4, 5</strong> = 45 minutes. <strong>2, 0, 0</strong> = 2 hours. The digits flow right to left just like a stopwatch.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">🌬</div>
+      <div class="callout-body">
+        <div class="callout-title">Wind at Launch — auto-filled if you don't know it</div>
+        <div class="callout-desc">No anemometer on you and can't remember the exact numbers? Leave speed, gust and direction blank and save the flight anyway — LeeSide fills them in automatically from historical weather data for that site and time, marked <strong>"Estimated from Open-Meteo."</strong> Edit any of the three fields afterward to replace it with your own reading — the label disappears the moment you do. Already went back and looked something up for an old flight, then changed your mind? Delete the numbers and save again — since you're removing data rather than leaving it blank from the start, it stays empty rather than being estimated again. Editing an existing flight that's missing wind data shows a small <strong>🔍 icon</strong> inside the direction field — tap it any time to fetch an estimate on demand, without waiting to save first.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">🪂</div>
+      <div class="callout-body">
+        <div class="callout-title">Wing, Harness &amp; Reserve — from your gear list</div>
+        <div class="callout-desc">Dropdowns are populated from your Gear list. <strong>The top item is pre-selected automatically.</strong> If you have multiple wings, the first in your list is the default — reorder them in Gear to change the default.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">👥</div>
+      <div class="callout-body">
+        <div class="callout-title">Flying With — remembered</div>
+        <div class="callout-desc">Add pilots you flew with. Once added they appear in the dropdown for future flights. Manage your pilot list in Settings.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">☁️</div>
+      <div class="callout-body">
+        <div class="callout-title">Conditions — customisable tags</div>
+        <div class="callout-desc">Tap chips to select conditions. Manage the full list — add, rename, or remove tags — in Settings → Edit Conditions. Renaming one updates every flight that already used it.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">🚀</div>
+      <div class="callout-body">
+        <div class="callout-title">Launch Type — remembers your preferred method, per site</div>
+        <div class="callout-desc">Forward, Reverse, or Cobra — LeeSide defaults to whichever launch type you use most often <strong>at that specific site</strong> (e.g. always reverse at one site, always forward at another). Flying somewhere new? It falls back to your overall history instead. Just tap a different one if this flight was different.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">📝</div>
+      <div class="callout-body">
+        <div class="callout-title">Notes — full formatting support</div>
+        <div class="callout-desc">Tap the Notes field to expand it full screen. Bullet lists, checklists you can tap to check off, headers, warning lines, links and bold text all work here too — see the <strong>Notes</strong> section for the full list.</div>
+      </div>
+    </div>
+  </div>
+  <div class="highlight">
+    <strong>Tip:</strong> If you log a new wing or harness name via free text in the flight form, it's automatically added to your Gear list. You can then add full specs to it later in the Gear tab.
+  </div>
+</div>
+
+<!-- SECTION 4: SITES -->
+<div class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div class="section-title">Sites</div>
+  </div>
+  <p style="color:var(--text2);margin-bottom:24px">Your Sites tab is more than a list — it's a running notebook for every site you fly, or want to fly one day. Add a site long before your first flight there and build up local knowledge over time: launch directions, retrieve info, webcams, emergency contacts. By the time you actually fly it, you'll already know it.</p>
+
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+    <img class="screen-img" src="screenshots/04-sites-list.png" alt="Sites list">
+  </div>
+  <div class="callouts" style="margin-bottom:36px">
+    <div class="callout">
+      <div class="callout-num">1</div>
+      <div class="callout-body">
+        <div class="callout-title">Search &amp; wind filtering</div>
+        <div class="callout-desc">The search bar filters your sites by name, country, or note text as you type — same as Logbook's search. It also understands live wind conditions: type <strong>wind&lt;15</strong> to hide anything currently blown out, <strong>gust&lt;20</strong> for gust specifically, or a range like <strong>wind&gt;8 &lt;15</strong> for that sweet soaring band. Combine wind and gust together too — <strong>wind&lt;15, gust&lt;20</strong> — both apply at once. A site with no current wind reading yet is left out of a wind search rather than guessed at.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">2</div>
+      <div class="callout-body">
+        <div class="callout-title">Live weather on every card</div>
+        <div class="callout-desc">Current wind speed, direction and gusts, plus a forecast strip. <strong>Tap the small pill</strong> to the left of the forecast strip (shows the current view — 1h, 3h, or day) to cycle between hourly, 3-hourly, and a full week view — tapping the strip itself just scrolls it. <strong>Tap the wind reading itself</strong> to open the full forecast on Windy. The left edge of each card is tinted by wind speed for an at-a-glance read down the list.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">3</div>
+      <div class="callout-body">
+        <div class="callout-title">Distance from you</div>
+        <div class="callout-desc">Sites are shown with how far away they are. Handy for planning ahead, and for keeping aspirational sites — the ones you haven't flown yet — sorted alongside your regulars.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">4</div>
+      <div class="callout-body">
+        <div class="callout-title">Map View</div>
+        <div class="callout-desc">Tap the <strong>🗺️ map icon</strong> next to search to see every site plotted on one full-screen map — search for a place by name, switch between <strong>Standard, Topo, Dark, Light and Satellite</strong> layers, or toggle on <strong>🪂 Skyways</strong> to see where pilots actually fly based on real flight-track data, and <strong>☀️ Thermals</strong> for a heat-map of where lift tends to actually form — same free source as Skyways, just a different view of the same data. The map remembers your last layer choice and exactly where you left it, per device, so it picks up where you left off instead of resetting every time. Tap a marker to jump straight to that site's detail.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+    <img class="screen-img" src="screenshots/04-sites-map.png" alt="Sites Map View">
+  </div>
+
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+    <img class="screen-img" src="screenshots/04-sites-detail.png" alt="Site detail view">
+  </div>
+  <div class="callouts" style="margin-bottom:36px">
+    <div class="callout">
+      <div class="callout-num">5</div>
+      <div class="callout-body">
+        <div class="callout-title">Map, Earth &amp; Airspace</div>
+        <div class="callout-desc"><strong>Map</strong> opens the site on your Sites Map View, right in the app. <strong>Earth</strong> and <strong>Airspace</strong> open Google Earth and OpenAIP externally for the exact site coordinates — useful for checking launch/LZ terrain or nearby restricted airspace before you go.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">6</div>
+      <div class="callout-body">
+        <div class="callout-title">Links &amp; embedded video</div>
+        <div class="callout-desc">In a note, type a line like <strong>Directions: https://...</strong> and it becomes a tappable link pill — great for site guides, local WhatsApp/Telegram groups, or wind alerts. Use the label <strong>embed:</strong> with a YouTube link instead, and it plays right in the note as a video — great for launch or webcam footage.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">7</div>
+      <div class="callout-body">
+        <div class="callout-title">Photos</div>
+        <div class="callout-desc">Add photos to the site from Edit Site. Tap any photo to open it full screen, pinch to zoom, or tap the ✕ on a thumbnail to remove it.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+    <img class="screen-img" src="screenshots/04-sites-edit.png" alt="Edit Site screen">
+  </div>
+  <div class="callouts" style="margin-bottom:36px">
+    <div class="callout">
+      <div class="callout-num">8</div>
+      <div class="callout-body">
+        <div class="callout-title">Editing a site</div>
+        <div class="callout-desc">Tap <strong>Edit Site</strong> from a site's detail view to manage everything about it on one screen: name, GPS coordinates, launches, notes and photos — one <strong>Save</strong> for all of it. There's no separate site manager anymore; every site is edited from its own detail view. A <strong>Delete Site</strong> button sits at the bottom if you need to remove one — existing flights logged there keep showing the site name, it's just removed from future suggestions.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">9</div>
+      <div class="callout-body">
+        <div class="callout-title">Setting coordinates</div>
+        <div class="callout-desc">Type coordinates in whatever format you have to hand — decimal degrees (<strong>37.666369,-122.494513</strong>), decimal degrees with N/S/E/W (<strong>37.6698 N, 122.4283 W</strong>), degrees/minutes/seconds with or without symbols (<strong>37°40'12"N, 122°25'42"W</strong> or <strong>37 40 12 N, 122 25 42 W</strong>), or just paste a <strong>Google Maps link</strong> straight in. Or tap the small <strong>🗺️ map icon</strong> inside the field to drop a pin visually: search for a place by name, pan the map under the fixed center pin, switch between <strong>Standard, Topo, Dark, Light and Satellite</strong> layers, toggle <strong>🪂 Skyways</strong> or <strong>☀️ Thermals</strong> for flight-track and thermal data, or tap the locate button to jump to where you are. Tap <strong>Set</strong> to use that spot. Country fills in automatically as a 3-letter code next to the coordinates — tap it to correct manually if it's ever wrong.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">10</div>
+      <div class="callout-body">
+        <div class="callout-title">Launches</div>
+        <div class="callout-desc">Add as many named launches as a site has — different wind directions, altitudes, or spots. Tap a launch's name to edit it right there, or ✕ to remove it; renaming updates every existing flight that used it automatically. New sites logged from <strong>Log a Flight</strong> pick up their first launch the same way — nothing extra to set up.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">11</div>
+      <div class="callout-body">
+        <div class="callout-title">Share a site with another LeeSide user</div>
+        <div class="callout-desc">Got a site set up really well and a friend just started using LeeSide? Tap the <strong>📤 icon</strong> next to the site's name in Edit Site to send it — name, coordinates, launches, notes, and its emergency info (chosen hospital, access notes, other local contacts) — through your phone's normal share sheet (text, WhatsApp, email, whatever you'd use). They import it by tapping <strong>Import Shared Site</strong> below Add Site on their own Sites tab and pasting what you sent. It always arrives as a brand new, independent site on their end — nothing gets merged with anything they already have, even if they already had a site with the same name. Your own personal emergency contact is never included, only information about the site itself.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+    <img class="screen-img" src="screenshots/04-sites-emergency.png" alt="Emergency contact lookup">
+  </div>
+  <div class="callouts">
+    <div class="callout" style="background:rgba(224,85,85,0.08);border-color:rgba(224,85,85,0.25)">
+      <div class="callout-num" style="background:var(--red)">🚨</div>
+      <div class="callout-body">
+        <div class="callout-title" style="color:var(--red)">Emergency</div>
+        <div class="callout-desc">Every site detail has a red <strong>Emergency</strong> button showing nearby hospitals for that location, nearest first — with GPS coordinates, a one-tap "Open in Maps" for directions, and a button to call directly. Tap <strong>Use this</strong> on any other hospital in the list to make it the primary one, or <strong>Look up again</strong> to refresh the list. You can also call <strong>emergency services</strong>, your own saved <strong>emergency contact</strong>, or add site-specific contacts of your own (a local pilot, a landowner, a retrieve driver). Away from a saved site? Tap <strong>🚨 Emergency</strong> in Settings or your avatar menu for the same live lookup based on your current location.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight" style="margin-top:24px">
+    <strong>Tip:</strong> Data use for site weather is genuinely tiny — feel free to add sites all over the world you'd like to fly one day, not just your local ones.
+  </div>
+  <div class="highlight">
+    <strong>Country, detected automatically:</strong> once a site has GPS coordinates, LeeSide quietly looks up its country in the background — no setup needed. That's what powers searching your logbook by country or country code.
+  </div>
+</div>
+
+<!-- SECTION 5: NOTES -->
+<div class="section" id="s5">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div class="section-title">Notes</div>
+  </div>
+  <div class="two-screens" style="margin-bottom:28px">
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Notes list</p>
+      <img class="screen-img" src="screenshots/05-notes-list.png" alt="Notes list">
+    </div>
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Note full view</p>
+      <img class="screen-img" src="screenshots/05-notes-full.png" alt="Note view">
+    </div>
+  </div>
+  <p style="color:var(--text2);margin-bottom:20px">This formatting works the same way in <strong>every</strong> note in the app — Flights, Sites, and Gear too, not just here.</p>
+  <div class="callouts">
+    <div class="callout">
+      <div class="callout-num">1</div>
+      <div class="callout-body">
+        <div class="callout-title">Tap a note to read it</div>
+        <div class="callout-desc">Tapping a note card opens the full-screen read view. Tap <strong>Edit Note</strong> at the bottom to make changes.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">2</div>
+      <div class="callout-body">
+        <div class="callout-title">Swipe between notes</div>
+        <div class="callout-desc">In the full note view, <strong>swipe left or right</strong> to move between notes. The counter (e.g. "1 of 5") shows your position. Use ‹ › buttons too.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">3</div>
+      <div class="callout-body">
+        <div class="callout-title"># Headers</div>
+        <div class="callout-desc">Start a line with <strong>#</strong> followed by a space to turn it into a bold header — handy for titling a site note, e.g. <strong>"# Mussel Rock"</strong>.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">4</div>
+      <div class="callout-body">
+        <div class="callout-title">Link pills</div>
+        <div class="callout-desc">Type a line as <strong>Label: https://...</strong> and it renders as a tappable pill button showing the label instead of a raw URL — e.g. <strong>"Site Guide: https://..."</strong>. Any other URL typed on its own still becomes a plain tappable link.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">5</div>
+      <div class="callout-body">
+        <div class="callout-title">Embed: videos</div>
+        <div class="callout-desc">Type a line as <strong>Embed: https://youtube.com/...</strong> or a Vimeo link the same way, and it plays right there in the note instead of just linking out — great for launch footage, a webcam, or a how-to clip.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">6</div>
+      <div class="callout-body">
+        <div class="callout-title">Video links, recognized automatically</div>
+        <div class="callout-desc">Paste any link to Google Photos, Apple/iCloud Photos, or GoPro — no special label needed — and LeeSide recognizes it as a video automatically, showing a <strong>▶️</strong> icon instead of a plain link. On a flight, it also shows as its own chip on the card. Type <strong>video</strong> in Logbook search to find every flight with one.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">7</div>
+      <div class="callout-body">
+        <div class="callout-title">**Bold** text</div>
+        <div class="callout-desc">Wrap any word or phrase in double asterisks — <strong>**like this**</strong> — to make it bold in the note's read view.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">8</div>
+      <div class="callout-body">
+        <div class="callout-title">- Bullet lists</div>
+        <div class="callout-desc">Start a line with <strong>- </strong> (a dash and a space) to turn it into a bullet point. Press Enter at the end of a bullet line and the next line automatically continues the list — no need to retype the dash every time. Press Enter on an empty bullet to exit the list and go back to normal typing.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">9</div>
+      <div class="callout-body">
+        <div class="callout-title">- [ ] Checklists</div>
+        <div class="callout-desc">Write <strong>- [ ] task</strong> for an unchecked item, or <strong>- [x] task</strong> for one already done. Tap any checklist line in the read view to check it off — tap again to uncheck it. Same auto-continue as bullet lists when you hit Enter. Great for a pre-flight routine, a repack checklist, or a gear maintenance list that actually gets ticked off.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">10</div>
+      <div class="callout-body">
+        <div class="callout-title">Uncheck All</div>
+        <div class="callout-desc">Type <strong>Uncheck All</strong> on its own line anywhere in a note and it becomes a tappable <strong>↺</strong> control that clears every checkbox in that note in one tap — handy for resetting a packing list before the next trip instead of unchecking each item by hand.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">11</div>
+      <div class="callout-body">
+        <div class="callout-title">! Warning lines</div>
+        <div class="callout-desc">Start a line with <strong>!</strong> followed by a space to make it stand out in red — e.g. <strong>"! Reserve overdue for repack"</strong>. Use it to flag anything you don't want to skim past.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">12</div>
+      <div class="callout-body">
+        <div class="callout-title">Photos</div>
+        <div class="callout-desc">Attach photos to any note. Thumbnails appear in the note card and full-size in the read view. Pinch to zoom on any photo.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">13</div>
+      <div class="callout-body">
+        <div class="callout-title">Photo captions</div>
+        <div class="callout-desc">Open any photo full screen — anywhere in the app, not just Notes — and tap the caption bar at the bottom to add a note about it, like a location, date, or what you're looking at. Tap again any time to edit it. The caption fades out of the way while you're zoomed in or right after tapping the photo, so it never gets in the way of the image itself.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">14</div>
+      <div class="callout-body">
+        <div class="callout-title">Drag to reorder</div>
+        <div class="callout-desc">Long-press a note card and drag it up or down to reorder — works with a finger on your phone or a mouse on PC/Mac. Put your most important notes at the top.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">15</div>
+      <div class="callout-body">
+        <div class="callout-title">Share a note with another LeeSide user</div>
+        <div class="callout-desc">Tap the <strong>📤 icon</strong> next to a note's title in Edit Note to send it through your phone's normal share sheet. They import it by tapping <strong>Import Shared Note</strong> at the bottom of their own Notes tab and pasting what you sent — arrives as a brand new, independent note, checklists and all.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: GEAR -->
+<div class="section" id="s6">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <div class="section-title">Gear</div>
+  </div>
+  <div class="two-screens" style="margin-bottom:28px">
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Gear list</p>
+      <img class="screen-img" src="screenshots/06-gear-list.png" alt="Gear list">
+    </div>
+    <div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Reserve detail</p>
+      <img class="screen-img" src="screenshots/06-gear-reserve.png" alt="Reserve detail">
+    </div>
+  </div>
+  <div class="callouts">
+    <div class="callout">
+      <div class="callout-num">1</div>
+      <div class="callout-body">
+        <div class="callout-title">Three categories</div>
+        <div class="callout-desc"><strong>Wing 🪂, Harness 🦺, Reserve 🛟</strong> — each can hold multiple items. Tap <strong>+</strong> to add. You can have a comp wing, a training wing and a mini wing all listed.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">2</div>
+      <div class="callout-body">
+        <div class="callout-title">Top item = default in Log Flight</div>
+        <div class="callout-desc">When logging a flight, the <strong>first item in each gear category is pre-selected.</strong> Long-press and drag an item to reorder — put your main wing at the top.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">3</div>
+      <div class="callout-body">
+        <div class="callout-title">Tap an item for overview</div>
+        <div class="callout-desc">Tap any gear item to see a full overview — all specs, airtime from logbook (for wings), repack status (for reserves). Swipe left/right to browse all your gear.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">4</div>
+      <div class="callout-body">
+        <div class="callout-title">Reserve repack alert</div>
+        <div class="callout-desc">If your reserve hasn't been repacked in <strong>6 months</strong>, a red warning appears on the gear card and in the overview. Repack date is tracked per reserve.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">5</div>
+      <div class="callout-body">
+        <div class="callout-title">Wing airtime</div>
+        <div class="callout-desc">For each wing, LeeSide <strong>calculates total flights and airtime automatically</strong> from your logbook. No manual entry needed — it updates every time you log a flight.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">6</div>
+      <div class="callout-body">
+        <div class="callout-title">URL links</div>
+        <div class="callout-desc">Add a link to each gear item — manufacturer page, spec sheet, inspection report. Tap the 🔗 icon on the gear list to open it directly.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">7</div>
+      <div class="callout-body">
+        <div class="callout-title">Serial Number & Service Contact</div>
+        <div class="callout-desc">Record the serial number from the label or a service record, and who serviced it — shop name, phone, or website — so you know exactly who to call next time. Both are shared fields across Wing, Harness and Reserve.</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-num">8</div>
+      <div class="callout-body">
+        <div class="callout-title">Notes</div>
+        <div class="callout-desc">Tap the Notes field to expand it full screen. Same formatting as everywhere else in the app — bullet lists, checklists you can tap to check off, headers, warning lines, links and bold text. See the <strong>Notes</strong> section for the full list.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7: STATS -->
+<div class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <div class="section-title">Stats</div>
+  </div>
+  <p style="color:var(--text2);margin-bottom:24px">Tap the <strong>📊 chart icon</strong> next to the search bar on your Logbook tab to open Stats.</p>
+  <div class="screen-layout">
+    <div class="screen-wrap">
+      <img class="screen-img" src="screenshots/07-stats.png" alt="Stats screen">
+    </div>
+    <div class="callouts">
+      <div class="callout">
+        <div class="callout-num">1</div>
+        <div class="callout-body">
+          <div class="callout-title">Overview cards</div>
+          <div class="callout-desc">Six key stats: total flights (your real logbook total), total airtime, best duration, best distance, best altitude, and sites flown. <strong>Tap a best to open that flight's detail.</strong></div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">2</div>
+        <div class="callout-body">
+          <div class="callout-title">Flights &amp; Airtime — pinch to zoom</div>
+          <div class="callout-desc">One dot per real flight, showing that flight's actual duration and date — no averaging or bucketing, so a quiet stretch shows as a genuine gap, not a misleading dip. <strong>Pinch to zoom</strong> in for individual flights, or zoom out to see months or years at once — drag to pan once zoomed in; on PC, scroll or swipe on a trackpad works the same way. Tap a dot to see its date, site, and duration; tap it again (or tap the info box) to open that flight's detail page.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">3</div>
+        <div class="callout-body">
+          <div class="callout-title">Charts — reorderable</div>
+          <div class="callout-desc">The timeline chart, launch type pie, flight types pie, and sites flown bar chart. Long-press the <strong>⠿</strong> handle on any chart and drag it to reorder — same drag-and-drop as Notes and Gear.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 8: SETTINGS -->
+<div class="section" id="s8">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <div class="section-title">Settings</div>
+  </div>
+  
+  <div class="full-screen-wrap" style="margin-bottom:24px">
+  <div class="two-screens" style="margin-bottom:28px">
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">TOP OF SETTINGS</div>
+      <img class="screen-img" src="screenshots/08-settings.png" alt="Settings top">
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px">BOTTOM OF SETTINGS</div>
+      <img class="screen-img" src="screenshots/08-settings-2.png" alt="Settings bottom">
+    </div>
+  </div>
+  </div>
+  <div class="callouts">
+      <div class="callout">
+        <div class="callout-num">1</div>
+        <div class="callout-body">
+          <div class="callout-title">Data Saver</div>
+          <div class="callout-desc"><strong>This setting is per-device</strong> — it doesn't sync between your phone, tablet, or computer, so you can have it on where it matters and off where it doesn't. New phones (Android or iPhone) start with it <strong>on</strong> by default; a new computer starts with it <strong>off</strong>, since a desktop is essentially never on a genuine cellular connection. Change it any time in Settings on each device.<br><br>On <strong>Android</strong>, it pauses <strong>all</strong> syncing to Google Drive — flights, notes, settings and photos alike — whenever you're genuinely on cellular data, since Android can tell the difference; turn it off to sync freely on any connection. On <strong>iPhone and desktop browsers</strong>, which have no way to tell cellular from WiFi, turning it on works differently: your <strong>flights, notes and settings still keep syncing normally</strong> no matter what — only <strong>photos</strong> get held back. When photos are waiting, a banner appears — <strong>"Data Saver on — tap to sync N photos"</strong> — tap it any time to sync them on demand.<br><br>On every platform, embedded videos in notes show a "tap to load" warning instead of auto-playing while Data Saver is on, and Windy/Google Earth links ask first too; the Airspace link opens directly either way. Site weather always updates normally regardless, since it's a tiny, separate request.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">2</div>
+        <div class="callout-body">
+          <div class="callout-title">Theme</div>
+          <div class="callout-desc">Choose <strong>Sky</strong> (default) — a soft blue daytime theme, <strong>Dark</strong>, <strong>Light</strong>, <strong>High Visibility</strong> — larger text, pure black background, bright yellow accents, perfect for reading without glasses at the hill — or <strong>Terra</strong>, a warm parchment tone if you prefer something easier on the eyes than pure dark or pure light.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">3</div>
+        <div class="callout-body">
+          <div class="callout-title">Text size</div>
+          <div class="callout-desc">Drag the slider from 80% to 150% to scale all text in the app up or down. Handy if High Visibility theme alone isn't quite enough, or if you just prefer things a bit smaller.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">4</div>
+        <div class="callout-body">
+          <div class="callout-title">Dashboard pills</div>
+          <div class="callout-desc">Choose your 4 dashboard stats and arrange them with <strong>◀ ▶</strong> arrows. Tap a stat to add it, tap ✕ to remove.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">5</div>
+        <div class="callout-body">
+          <div class="callout-title">Edit Conditions</div>
+          <div class="callout-desc">Manage the condition tags shown when logging a flight, the same way as Pilots below — tap <strong>Edit Conditions</strong> for a full screen list. Add new ones, rename an existing tag (updates every flight that already used it), or remove ones you never use.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">6</div>
+        <div class="callout-body">
+          <div class="callout-title">Pilots list</div>
+          <div class="callout-desc">Pre-add your regular flying buddies so they appear in the "Flying With" dropdown when logging flights.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">7</div>
+        <div class="callout-body">
+          <div class="callout-title">Export Flight Log (PDF)</div>
+          <div class="callout-desc">Generates a <strong>print-ready PDF logbook</strong> — cover page with your stats, full flight table with all fields. Perfect for licence progression.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">8</div>
+        <div class="callout-body">
+          <div class="callout-title">Export to Excel</div>
+          <div class="callout-desc">Downloads a CSV file (opens directly in Excel, Numbers, or Google Sheets) with one row per flight and every field as its own column — handy for your own analysis or sorting/filtering outside the app.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">9</div>
+        <div class="callout-body">
+          <div class="callout-title">Export / Import backup (JSON)</div>
+          <div class="callout-desc"><strong>Export regularly</strong> to keep a backup. The JSON file contains everything — all flights, notes, gear, photos and settings. Import it to restore on any device.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-num">10</div>
+        <div class="callout-body">
+          <div class="callout-title">Delete this device's data</div>
+          <div class="callout-desc">LeeSide is <strong>offline-first</strong> — everything you see is stored right on your device, not fetched from Drive on demand, so it keeps working with zero signal at a remote launch. That's also why <strong>each device only supports one signed-in account at a time</strong> — there's nowhere separate to keep a second account's data locally alongside the first. If you want to hand a device to someone else, or switch it to a different account, tap this button: it signs out and clears everything stored on <strong>this device only</strong>. Your real data is never at risk — it's already safe in your Google Drive — sign back in (same account or a different one) any time to pick up fresh.</div>
+        </div>
+      </div>
+      <div class="callout" style="background:rgba(224,85,85,0.08);border-color:rgba(224,85,85,0.25)">
+        <div class="callout-num" style="background:var(--red)">11</div>
+        <div class="callout-body">
+          <div class="callout-title" style="color:var(--red)">Reset everything</div>
+          <div class="callout-desc">Different from the button above — this one is genuinely permanent. It deletes <strong>all flights, notes, gear, sites, and settings, and your Google Drive backup too</strong> — not just this device's copy. There's no getting it back. Two separate confirmations stand in the way of an accidental tap, and both spell out exactly what's about to happen — but export a JSON backup first if there's any chance you'd want this data again.</div>
+        </div>
+      </div>
+  </div>
+
+</div>
+
+<!-- SECTION 9: TIPS -->
+<div class="section" id="s9">
+  <div class="section-header">
+    <div class="section-num">9</div>
+    <div class="section-title">Tips &amp; Tricks</div>
+  </div>
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="tip-icon">📵</div>
+      <div class="tip-title">Flying somewhere remote?</div>
+      <div class="tip-desc">Sign in once online. LeeSide works fully offline — log flights normally with no signal. Everything syncs automatically on the drive home.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">💾</div>
+      <div class="tip-title">Back up regularly</div>
+      <div class="tip-desc">Go to Settings → Export backup (JSON) and save the file somewhere safe. Do this before any big updates.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🔍</div>
+      <div class="tip-title">Powerful search</div>
+      <div class="tip-desc">The search bar on the Logbook tab searches across site, launch, wing, notes, pilots, conditions, flight types, <strong>country</strong>, <strong>date</strong>, and <strong>flight number</strong> all at once — type a country name, its 3-letter code, or "USA" to find every flight there, a flight type like "thermal" or "XC" to see how much time you've logged doing that, a date like "1 August" or "Aug 1" to find a flight without needing the exact format shown on the card, or a flight number to jump straight to it. As you type, a summary line appears under the search bar with the flight count and total airtime for everything currently matching — a quick way to answer "how many hours have I logged at this site" or "how much thermal time do I have" without leaving the search box. Tap the ☆ next to the search bar to show only your favourite flights.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">📲</div>
+      <div class="tip-title">Install to home screen</div>
+      <div class="tip-desc">Add LeeSide to your home screen for a full screen experience. No browser bar, works offline, loads instantly.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🔆</div>
+      <div class="tip-title">Can't read in bright sun?</div>
+      <div class="tip-desc">Switch to High Visibility mode in Settings for maximum contrast and larger text. No glasses needed.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">📖</div>
+      <div class="tip-title">Quick access to this guide</div>
+      <div class="tip-desc">Tap the LeeSide logo at the top of the app any time to jump straight back to this user guide. It's also linked at the top of Settings, right above <strong>🔒 Privacy &amp; Disclaimer</strong>.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🛟</div>
+      <div class="tip-title">Reserve repack reminder</div>
+      <div class="tip-desc">Add your reserve repack date in the Gear tab. LeeSide will warn you when it's been over 6 months — never fly with an overdue reserve.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">📄</div>
+      <div class="tip-title">Going for your P3?</div>
+      <div class="tip-desc">Use Settings → Export Flight Log (PDF) to generate a professional logbook, ready to hand to your examiner.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🗺️</div>
+      <div class="tip-title">Jump from a flight to its site — or its exact launch point</div>
+      <div class="tip-desc">Open any flight's detail card and tap the site name — it opens that site's full info (weather, notes, emergency contacts). For a one time location, it opens a map instead, focused on the exact launch coordinates. Tap Close to land right back on the same flight.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🤏</div>
+      <div class="tip-title">Pinch to zoom photos</div>
+      <div class="tip-desc">Tap any photo in a flight, note or gear item to open the full-screen viewer. Pinch to zoom, then drag to pan around the image. A small number badge shows on the thumbnail when a flight has more than one photo. On a phone, swipe left or right to move between multiple photos; on PC or Mac, use the ‹ › arrow buttons or the left/right keyboard arrows, and Escape to close.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-icon">🌍</div>
+      <div class="tip-title">Planning a trip?</div>
+      <div class="tip-desc">Add the site to your Sites tab as soon as you start planning. Gather links, photos and notes over time — by the time you land there, you'll already know the site.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p><strong>LeeSide</strong> · Paragliding Flight Logbook · Beta</p>
+  <p style="margin-top:6px">Open at <strong>chnevill.github.io/UpLift</strong> · Works on iPhone, Android &amp; PC</p>
+  <p style="margin-top:6px">Your data lives in your own Google Drive. Always export a JSON backup regularly.</p>
+</div>
+
+</div>
+<script>
+(function(){
+  const input=document.getElementById('guideSearch');
+  const clearBtn=document.getElementById('guideSearchClear');
+  const noResults=document.getElementById('guideSearchNoResults');
+  const countEl=document.getElementById('guideSearchCount');
+  const toc=document.querySelector('.toc');
+  // Callouts and tips share this same search - both are just title+description
+  // items, just styled differently. Original HTML is captured once up front so
+  // highlighting can always re-render from the clean source instead of compounding
+  // <mark> tags into itself on every keystroke.
+  const items=[...document.querySelectorAll('.callout,.tip')].map(el=>{
+    const titleEl=el.querySelector('.callout-title,.tip-title');
+    const descEl=el.querySelector('.callout-desc,.tip-desc');
+    return{el,titleEl,descEl,titleHtml:titleEl?titleEl.innerHTML:'',descHtml:descEl?descEl.innerHTML:'',
+      text:((titleEl?titleEl.textContent:'')+' '+(descEl?descEl.textContent:'')).toLowerCase()};
+  });
+  const sections=[...document.querySelectorAll('.section')];
+  const escapeRegex=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  function highlight(html,query){
+    if(!query)return html;
+    const re=new RegExp('('+escapeRegex(query)+')','ig');
+    return html.replace(re,'<mark>$1</mark>');
+  }
+  function runSearch(){
+    const q=input.value.trim().toLowerCase();
+    clearBtn.style.display=q?'block':'none';
+    toc.style.display=q?'none':'';
+    let matchCount=0;
+    items.forEach(it=>{
+      const match=!q||it.text.includes(q);
+      it.el.style.display=match?'':'none';
+      if(match){
+        if(q)matchCount++;
+        if(it.titleEl)it.titleEl.innerHTML=highlight(it.titleHtml,q);
+        if(it.descEl)it.descEl.innerHTML=highlight(it.descHtml,q);
+      }
+    });
+    sections.forEach(sec=>{
+      const hasVisible=[...sec.querySelectorAll('.callout,.tip')].some(el=>el.style.display!=='none');
+      sec.style.display=(!q||hasVisible)?'':'none';
+    });
+    noResults.style.display=(q&&!matchCount)?'block':'none';
+    countEl.style.display=(q&&matchCount)?'block':'none';
+    if(q&&matchCount)countEl.textContent=matchCount+(matchCount===1?' result':' results');
+  }
+  input.addEventListener('input',runSearch);
+  clearBtn.addEventListener('click',()=>{input.value='';runSearch();input.focus();});
+})();
+</script>
+</body>
+</html>
