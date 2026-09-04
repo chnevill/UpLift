@@ -1,4 +1,4 @@
-const CACHE='leeside-v507';
+const CACHE='leeside-v508';
 const URLS=[
   '/UpLift/',
   '/UpLift/index.html'
